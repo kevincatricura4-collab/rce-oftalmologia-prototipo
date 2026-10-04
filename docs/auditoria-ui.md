@@ -23,7 +23,7 @@ skill UI UX Pro Max (accesibilidad, formularios, tablas, modo oscuro). Fecha: oc
 | Campos con etiqueta; botones de solo ícono con nombre | Cumple (axe: 0 fallas) |
 | Ninguna información depende solo del color | Cumple: estados, faltantes y PIO alta llevan ícono y texto |
 | OD a la izquierda y OI a la derecha, con sigla | Cumple en todos los anchos; en teléfono la etiqueta sube y OD/OI siguen lado a lado |
-| Sin emojis; íconos Phosphor | Cumple |
+| Sin emojis; íconos de un solo sistema | Cumple: IBM Carbon desde `components/iconos.tsx`, en 16 o 20 px |
 | Sin hex fuera de los tokens | Cumple en componentes (los hex viven solo en `src/index.css`) |
 | 1366×768 y 768 px sin desplazamiento horizontal | Cumple, también a 390 y 1024 px |
 | El rol que no corresponde no ve la pantalla ni el dato | Cumple; el intento queda en el registro de accesos |
@@ -50,7 +50,7 @@ skill UI UX Pro Max (accesibilidad, formularios, tablas, modo oscuro). Fecha: oc
 ## Mejoras de uso (intuitividad)
 
 - Ingreso con un recorrido sugerido de cinco pasos para quien evalúa el prototipo.
-- Agenda con tarjeta "Siguiente paciente" según el rol, filtro por estado con "Ver todos" y
+- Agenda con tarjeta "Siguiente paciente" según el rol, filtro por estado (franja segmentada con "Todos") y
   confirmación al volver de la pre-atención.
 - Consulta con enlace de vuelta a la agenda, cita y estado visibles, y "Siguiente paciente" al
   cerrar.
@@ -63,3 +63,20 @@ skill UI UX Pro Max (accesibilidad, formularios, tablas, modo oscuro). Fecha: oc
 
 - Prueba con lector de pantalla real (NVDA o VoiceOver) y con usuarios clínicos.
 - Medición de tiempos de registro frente a la ficha en papel (RNF-05).
+
+## Segunda revisión: íconos y aspecto de plantilla
+
+Kevin observó que los íconos "se veían hechos por IA". Un panel de tres propuestas de diseño
+(clínica, técnica y crítica) y un juez definieron el cambio:
+
+- **Íconos:** de Phosphor a IBM Carbon, el sistema de IBM para software empresarial y de salud. Se
+  copian los dibujos con `scripts/generar-iconos.mjs` en vez de instalar `@carbon/icons-react`,
+  porque ese paquete envía métricas de uso a IBM al instalarse en servidores de CI.
+- **Marca:** cuatro E de Snellen (cartilla de E direccional) en vez del ojo en un cuadrado azul.
+- **Estados por forma:** anillo punteado, cuña, mitad, check relleno; severidad también por forma
+  (triángulo, hexágono, círculo tachado, círculo con i).
+- **Patrones de plantilla eliminados:** íconos en cuadrados de color, tarjetas de indicador con
+  ícono, pastillas de color en estados e insignias, grilla de tarjetas en el ingreso.
+
+Tras el cambio se repitieron axe-core (0 fallas en claro y oscuro), las 40 comprobaciones de flujo,
+el recorrido con teclado y los cuatro anchos de pantalla.
