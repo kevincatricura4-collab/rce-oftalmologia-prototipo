@@ -1,5 +1,5 @@
-import { MagnifyingGlass, Plus, Trash } from '@phosphor-icons/react'
 import { useId, useMemo, useState } from 'react'
+import { IconoAgregar, IconoBuscar, IconoQuitar } from '../../components/iconos'
 import { Aviso, Boton, Insignia, Segmentado, Tarjeta, claseEntrada, cx } from '../../components/ui'
 import { CIE10 } from '../../lib/catalogos'
 import { sic as buscarSic } from '../../lib/datos'
@@ -62,7 +62,7 @@ export function PasoDiagnostico({ consulta, soloLectura, actualizar, registrar }
             Texto o código
           </label>
           <div className="relative mt-1">
-            <MagnifyingGlass size={18} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted" aria-hidden="true" />
+            <IconoBuscar size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted" aria-hidden="true" />
             <input
               id={idBusqueda}
               type="search"
@@ -85,7 +85,7 @@ export function PasoDiagnostico({ consulta, soloLectura, actualizar, registrar }
                   <button type="button" onClick={() => agregar(r.codigo, r.descripcion)} className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-left transition-colors duration-150 hover:bg-primary-soft">
                     <span className="tnum w-14 shrink-0 font-semibold text-primary">{r.codigo}</span>
                     <span className="min-w-0 flex-1">{r.descripcion}</span>
-                    <Plus size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
+                    <IconoAgregar size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
                     <span className="sr-only">Agregar</span>
                   </button>
                 </li>
@@ -99,7 +99,7 @@ export function PasoDiagnostico({ consulta, soloLectura, actualizar, registrar }
               <p className="text-[0.8125rem] font-medium text-fg-muted">Según la sospecha de la SIC ({sic.sospecha?.toLowerCase()})</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {sugeridos.map((s) => (
-                  <Boton key={s.codigo} pequeno icono={Plus} onClick={() => agregar(s.codigo, s.descripcion)} disabled={dx.some((d) => d.codigo === s.codigo)}>
+                  <Boton key={s.codigo} pequeno icono={IconoAgregar} onClick={() => agregar(s.codigo, s.descripcion)} disabled={dx.some((d) => d.codigo === s.codigo)}>
                     <span className="tnum font-semibold">{s.codigo}</span> {s.descripcion}
                   </Boton>
                 ))}
@@ -126,7 +126,7 @@ export function PasoDiagnostico({ consulta, soloLectura, actualizar, registrar }
                   </p>
                   {!soloLectura && (
                     <button type="button" onClick={() => quitar(d.id)} aria-label={`Quitar ${d.codigo} ${d.descripcion}`} className="grid size-9 shrink-0 place-items-center rounded-md text-danger hover:bg-danger-soft">
-                      <Trash size={18} aria-hidden="true" />
+                      <IconoQuitar size={16} aria-hidden="true" />
                     </button>
                   )}
                 </div>

@@ -1,7 +1,7 @@
-import { FloppyDisk } from '@phosphor-icons/react'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../components/EncabezadoPaciente'
+import { IconoGuardar } from '../components/iconos'
 import { useTituloPagina } from '../components/Layout'
 import { TarjetaSic } from '../components/TarjetaSic'
 import { AreaTexto, Aviso, Boton, Campo, Entrada, Segmentado, claseEntrada, cx } from '../components/ui'
@@ -159,7 +159,7 @@ export function PreAtencion() {
               Volver a la agenda
             </Link>
             {!soloLectura && (
-              <Boton type="submit" variante="primario" icono={FloppyDisk}>
+              <Boton type="submit" variante="primario" icono={IconoGuardar}>
                 Guardar pre-atención
               </Boton>
             )}

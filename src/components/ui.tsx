@@ -1,4 +1,4 @@
-import { CheckCircle, Info, WarningCircle, XCircle, type Icon } from '@phosphor-icons/react'
+import { IconoCompleto, IconoError, IconoFaltante, IconoInformacion, type Icono as TipoIcono } from './iconos'
 import { useId, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import type { Lateralidad } from '../lib/tipos'
 
@@ -24,7 +24,7 @@ const DESHABILITADO = 'disabled:border-line disabled:bg-muted disabled:text-fg-m
 
 interface PropsBoton extends ButtonHTMLAttributes<HTMLButtonElement> {
   variante?: Variante
-  icono?: Icon
+  icono?: TipoIcono
   pequeno?: boolean
 }
 
@@ -41,7 +41,7 @@ export function Boton({ variante = 'secundario', icono: Icono, pequeno, classNam
       )}
       {...resto}
     >
-      {Icono && <Icono size={pequeno ? 16 : 18} aria-hidden="true" />}
+      {Icono && <Icono size={16} aria-hidden="true" />}
       {children}
     </button>
   )
@@ -152,19 +152,22 @@ export function Segmentado<T extends string>({ nombre, etiqueta, opciones, valor
 
 type TonoAviso = 'faltante' | 'info' | 'ok' | 'error'
 
-const TONOS: Record<TonoAviso, { clase: string; icono: Icon }> = {
-  faltante: { clase: 'border-warn-line bg-warn-soft text-warn', icono: WarningCircle },
-  info: { clase: 'border-primary/40 bg-primary-soft text-fg', icono: Info },
-  ok: { clase: 'border-ok/50 bg-ok-soft text-fg', icono: CheckCircle },
-  error: { clase: 'border-danger bg-danger-soft text-danger', icono: XCircle },
+// La forma del ícono distingue el tono (triángulo, círculo tachado, i, check), no solo el color.
+// Fondo de color solo en lo que exige acción (faltante y error); información y confirmación van sobre
+// la superficie con la barra izquierda.
+const TONOS: Record<TonoAviso, { clase: string; icono: TipoIcono; colorIcono: string }> = {
+  faltante: { clase: 'border-warn-line bg-warn-soft text-warn', icono: IconoFaltante, colorIcono: 'text-warn' },
+  info: { clase: 'border-line border-l-primary bg-surface text-fg', icono: IconoInformacion, colorIcono: 'text-primary' },
+  ok: { clase: 'border-line border-l-ok bg-surface text-fg', icono: IconoCompleto, colorIcono: 'text-ok' },
+  error: { clase: 'border-danger bg-danger-soft text-danger', icono: IconoError, colorIcono: 'text-danger' },
 }
 
-/** Franja con ícono, título corto y qué hacer. */
+/** Notificación en línea: barra izquierda, ícono de forma propia, título corto y qué hacer. */
 export function Aviso({ tono = 'info', titulo, children, className, accion }: { tono?: TonoAviso; titulo: ReactNode; children?: ReactNode; className?: string; accion?: ReactNode }) {
-  const { clase, icono: Icono } = TONOS[tono]
+  const { clase, icono: Icono, colorIcono } = TONOS[tono]
   return (
-    <div className={cx('flex items-start gap-3 rounded-lg border px-4 py-3', clase, className)} role={tono === 'error' ? 'alert' : undefined}>
-      <Icono size={20} className={cx('mt-0.5 shrink-0', tono === 'ok' && 'text-ok', tono === 'info' && 'text-primary')} aria-hidden="true" />
+    <div className={cx('flex items-start gap-3 rounded-sm border border-l-[3px] px-4 py-3', clase, className)} role={tono === 'error' ? 'alert' : undefined}>
+      <Icono size={20} className={cx('mt-0.5 shrink-0', colorIcono)} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{titulo}</p>
         {children && <div className="mt-0.5 text-sm text-fg">{children}</div>}
@@ -206,17 +209,18 @@ export function SiglaOjo({ ojo, className }: { ojo: Lateralidad; className?: str
   )
 }
 
-export function Insignia({ children, tono = 'neutro', icono: Icono, className }: { children: ReactNode; tono?: 'neutro' | 'faltante' | 'ok' | 'info' | 'error'; icono?: Icon; className?: string }) {
+/** Etiqueta con borde. Solo faltante y error llevan fondo, porque piden acción. */
+export function Insignia({ children, tono = 'neutro', icono: Icono, className }: { children: ReactNode; tono?: 'neutro' | 'faltante' | 'ok' | 'info' | 'error'; icono?: TipoIcono; className?: string }) {
   const clase = {
-    neutro: 'bg-muted text-fg-muted',
-    faltante: 'bg-warn-soft text-warn',
-    ok: 'bg-ok-soft text-ok',
-    info: 'bg-primary-soft text-primary',
-    error: 'bg-danger-soft text-danger',
+    neutro: 'border-line-strong text-fg-muted',
+    faltante: 'border-warn-line bg-warn-soft text-warn',
+    ok: 'border-ok text-ok',
+    info: 'border-primary text-primary',
+    error: 'border-danger bg-danger-soft text-danger',
   }[tono]
   return (
-    <span className={cx('inline-flex items-center gap-1 whitespace-nowrap rounded px-1.5 py-0.5 text-[0.8125rem] font-medium', clase, className)}>
-      {Icono && <Icono size={14} aria-hidden="true" />}
+    <span className={cx('inline-flex items-center gap-1 whitespace-nowrap rounded-sm border px-1.5 py-0.5 text-[0.8125rem] font-medium', clase, className)}>
+      {Icono && <Icono size={16} className="shrink-0" aria-hidden="true" />}
       {children}
     </span>
   )

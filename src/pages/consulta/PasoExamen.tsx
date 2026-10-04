@@ -1,6 +1,6 @@
-import { ArrowSquareOut } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
 import { FormularioExamen } from '../../components/FormularioExamen'
+import { IconoAvanzar } from '../../components/iconos'
 import { Tarjeta } from '../../components/ui'
 import { camposPendientes, controlesPrevios } from '../../lib/consulta'
 import { hora, mesAnio, nombreMes } from '../../lib/formato'
@@ -143,7 +143,7 @@ function PanelControlesPrevios({ consulta }: { consulta: Consulta }) {
       )}
       <Link to={`/historial/${consulta.pacienteId}`} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
         Ver evolución completa
-        <ArrowSquareOut size={14} aria-hidden="true" />
+        <IconoAvanzar size={16} aria-hidden="true" />
       </Link>
     </section>
   )

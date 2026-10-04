@@ -1,16 +1,24 @@
-import { ArrowRight, ChartBar, Eyeglasses, GearSix, Stethoscope, type Icon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
 import { BarraSuperior } from '../components/BarraSuperior'
+import {
+  IconoAvanzar,
+  IconoReportes,
+  IconoRolAdministrador,
+  IconoRolOftalmologo,
+  IconoRolTecnologo,
+  type Icono,
+} from '../components/iconos'
 import { useEstado } from '../lib/store'
 import type { Rol } from '../lib/tipos'
 import { ROLES } from '../lib/usuarios'
 import { inicioDeRol, useTituloPagina } from '../components/Layout'
 
-const ICONO_ROL: Record<Rol, Icon> = {
-  oftalmologo: Stethoscope,
-  tecnologo: Eyeglasses,
-  jefatura: ChartBar,
-  administrador: GearSix,
+// Cada rol se identifica por su herramienta de trabajo; la jefatura existe para ver reportes.
+const ICONO_ROL: Record<Rol, Icono> = {
+  oftalmologo: IconoRolOftalmologo,
+  tecnologo: IconoRolTecnologo,
+  jefatura: IconoReportes,
+  administrador: IconoRolAdministrador,
 }
 
 export function Ingreso() {
@@ -32,7 +40,8 @@ export function Ingreso() {
           módulo desde ese rol.
         </p>
 
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+        {/* Selector de perfil en lista, sin truncar: el outline negativo evita que overflow-hidden recorte el foco. */}
+        <ul aria-label="Perfiles de prueba" className="mt-8 divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">
           {perfiles.map((usuario) => {
             const Icono = ICONO_ROL[usuario.rol]
             const rol = ROLES[usuario.rol]
@@ -44,23 +53,19 @@ export function Ingreso() {
                     ingresar(usuario)
                     navegar(inicioDeRol(usuario.rol))
                   }}
-                  className="group flex h-full w-full flex-col rounded-lg border border-line bg-surface p-5 text-left transition-colors duration-150 hover:border-primary hover:bg-primary-soft"
+                  className="grid w-full grid-cols-[1rem_1fr] gap-x-3 gap-y-1 px-4 py-4 text-left transition-colors duration-150 hover:bg-muted focus-visible:outline-offset-[-3px] sm:grid-cols-[1rem_15rem_1fr_auto] sm:items-center sm:gap-x-5 sm:px-5"
                 >
-                  <span className="flex items-center gap-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-md bg-primary-soft text-primary group-hover:bg-surface" aria-hidden="true">
-                      <Icono size={22} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-display text-base font-semibold">{rol.nombre}</span>
-                      <span className="block truncate text-sm text-fg-muted">
-                        {usuario.nombre} · {usuario.ubicacion}
-                      </span>
+                  <Icono size={16} className="mt-1 self-start text-fg-muted" aria-hidden="true" />
+                  <span className="min-w-0">
+                    <span className="block font-display font-semibold">{rol.nombre}</span>
+                    <span className="block text-sm text-fg-muted">
+                      {usuario.nombre} · {usuario.ubicacion}
                     </span>
                   </span>
-                  <span className="mt-3 block text-sm">{rol.funciones}</span>
-                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                    Ingresar con este perfil
-                    <ArrowRight size={16} aria-hidden="true" />
+                  <span className="col-start-2 text-sm sm:col-start-auto">{rol.funciones}</span>
+                  <span className="col-start-2 inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-primary sm:col-start-auto">
+                    Ingresar
+                    <IconoAvanzar size={16} aria-hidden="true" />
                   </span>
                 </button>
               </li>

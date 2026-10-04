@@ -1,9 +1,9 @@
-import { Printer, X } from '@phosphor-icons/react'
 import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { paciente as buscarPaciente } from '../lib/datos'
 import { documento, edad, fechaHora } from '../lib/formato'
 import { useEstado, usuarioPorId } from '../lib/store'
+import { IconoCerrar, IconoImprimir } from './iconos'
 import { Boton, cx } from './ui'
 
 /**
@@ -93,11 +93,11 @@ export function DialogoDocumento({ abierto, onCerrar, titulo, children, acciones
             <h2 className="text-base font-semibold">{titulo}</h2>
             <div className="flex gap-2">
               {acciones}
-              <Boton variante="primario" icono={Printer} onClick={() => window.print()}>
+              <Boton variante="primario" icono={IconoImprimir} onClick={() => window.print()}>
                 Imprimir
               </Boton>
               <button type="button" onClick={onCerrar} aria-label="Cerrar vista previa" className="grid size-10 place-items-center rounded-md hover:bg-muted">
-                <X size={20} aria-hidden="true" />
+                <IconoCerrar size={20} aria-hidden="true" />
               </button>
             </div>
           </div>

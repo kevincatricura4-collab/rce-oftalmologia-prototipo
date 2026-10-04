@@ -1,15 +1,15 @@
-import { WarningCircle } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { establecimiento } from '../lib/datos'
 import { diasEntre, fecha } from '../lib/formato'
 import type { Sic } from '../lib/tipos'
+import { IconoFaltante } from './iconos'
 import { Insignia, Tarjeta } from './ui'
 
 /** Campo de la SIC que vino vacío: ícono y texto, no solo color (RF-01). */
 function Vacio() {
   return (
-    <span className="inline-flex items-center gap-1 rounded bg-warn-soft px-1.5 py-0.5 text-[0.8125rem] font-semibold text-warn">
-      <WarningCircle size={14} aria-hidden="true" />
+    <span className="inline-flex items-center gap-1 text-[0.8125rem] font-semibold text-warn">
+      <IconoFaltante size={16} className="shrink-0" aria-hidden="true" />
       Vacío en la SIC
     </span>
   )

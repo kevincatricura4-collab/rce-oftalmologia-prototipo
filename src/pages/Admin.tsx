@@ -1,6 +1,6 @@
-import { Plus, Trash, UserMinus, UserPlus } from '@phosphor-icons/react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
+import { IconoAgregar, IconoAltaUsuario, IconoCompleto, IconoDarDeBaja, IconoQuitar, IconoSinAcceso } from '../components/iconos'
 import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { Aviso, Boton, Campo, Entrada, Insignia, Segmentado, Seleccion, Tarjeta } from '../components/ui'
 import { camposPorGrupo } from '../lib/consulta'
@@ -80,16 +80,16 @@ function Usuarios() {
                     ))}
                   </Seleccion>
                 </td>
-                <td className="px-3 py-2.5">{u.activo ? <Insignia tono="ok">Activo</Insignia> : <Insignia>De baja</Insignia>}</td>
+                <td className="px-3 py-2.5">{u.activo ? <Insignia tono="ok" icono={IconoCompleto}>Activo</Insignia> : <Insignia icono={IconoSinAcceso}>De baja</Insignia>}</td>
                 <td className="px-4 py-2.5 text-right">
                   {u.id === usuario?.id ? (
                     <span className="text-sm text-fg-muted">Sesión actual</span>
                   ) : u.activo ? (
-                    <Boton pequeno icono={UserMinus} onClick={() => confirm(`¿Dar de baja a ${u.nombre}? No podrá ingresar al sistema; sus registros se conservan.`) && guardarUsuario({ ...u, activo: false })}>
+                    <Boton pequeno icono={IconoDarDeBaja} onClick={() => confirm(`¿Dar de baja a ${u.nombre}? No podrá ingresar al sistema; sus registros se conservan.`) && guardarUsuario({ ...u, activo: false })}>
                       Dar de baja
                     </Boton>
                   ) : (
-                    <Boton pequeno icono={UserPlus} onClick={() => guardarUsuario({ ...u, activo: true })}>
+                    <Boton pequeno icono={IconoAltaUsuario} onClick={() => guardarUsuario({ ...u, activo: true })}>
                       Reactivar
                     </Boton>
                   )}
@@ -118,7 +118,7 @@ function Usuarios() {
           </Campo>
           <Campo etiqueta="Ubicación">{(p) => <Entrada {...p} value={nuevo.ubicacion} placeholder="Ej.: Box 3" onChange={(e) => setNuevo({ ...nuevo, ubicacion: e.target.value })} />}</Campo>
           <div className="flex items-end">
-            <Boton type="submit" variante="primario" icono={UserPlus}>
+            <Boton type="submit" variante="primario" icono={IconoAltaUsuario}>
               Crear usuario
             </Boton>
           </div>
@@ -233,7 +233,7 @@ function Plantillas() {
                     </label>
                     {c.personalizado && (
                       <button type="button" onClick={() => quitar(c.id)} aria-label={`Quitar campo ${c.etiqueta}`} className="grid size-9 place-items-center rounded-md text-danger hover:bg-danger-soft">
-                        <Trash size={18} aria-hidden="true" />
+                        <IconoQuitar size={16} aria-hidden="true" />
                       </button>
                     )}
                   </li>
@@ -291,7 +291,7 @@ function Plantillas() {
                 {error}
               </p>
             )}
-            <Boton type="submit" variante="primario" icono={Plus}>
+            <Boton type="submit" variante="primario" icono={IconoAgregar}>
               Agregar a {plantilla.nombre.toLowerCase()}
             </Boton>
           </form>
@@ -334,7 +334,7 @@ function ListaCatalogo({ titulo, clave, catalogos, onGuardar, ejemplo }: { titul
           <li key={item} className="flex min-h-11 items-center justify-between gap-3 px-3 py-1.5">
             <span className="min-w-0">{item}</span>
             <button type="button" onClick={() => onGuardar({ ...catalogos, [clave]: lista.filter((x) => x !== item) })} aria-label={`Quitar ${item}`} className="grid size-9 shrink-0 place-items-center rounded-md text-danger hover:bg-danger-soft">
-              <Trash size={18} aria-hidden="true" />
+              <IconoQuitar size={16} aria-hidden="true" />
             </button>
           </li>
         ))}
@@ -343,7 +343,7 @@ function ListaCatalogo({ titulo, clave, catalogos, onGuardar, ejemplo }: { titul
         <Campo etiqueta={`Agregar a ${titulo.toLowerCase()}`} className="flex-1">
           {(p) => <Entrada {...p} value={texto} placeholder={ejemplo} onChange={(e) => setTexto(e.target.value)} />}
         </Campo>
-        <Boton type="submit" icono={Plus}>
+        <Boton type="submit" icono={IconoAgregar}>
           Agregar
         </Boton>
       </form>
