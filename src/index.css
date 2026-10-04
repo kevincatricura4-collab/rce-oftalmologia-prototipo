@@ -26,7 +26,7 @@
   --ok-soft: #dcfce7;
   --warn: #92400e;
   --warn-soft: #fef3c7;
-  --warn-line: #d97706;
+  --warn-line: #b45309;
   --danger: #b91c1c;
   --danger-soft: #fee2e2;
   --od: #0369a1;
@@ -113,6 +113,10 @@
     font-family: var(--font-display);
     text-wrap: balance;
   }
+  /* Un fieldset crece por defecto hasta el ancho mínimo de su contenido y rompe el diseño en pantallas angostas. */
+  fieldset {
+    min-width: 0;
+  }
   button, [role="button"], label[for], select, summary {
     cursor: pointer;
   }
@@ -136,20 +140,48 @@
   }
 }
 
-/* Impresión de documentos (receta, orden, contrarreferencia, resumen): solo sale la hoja. */
+/* Impresión de documentos (receta, orden, contrarreferencia, resumen): solo sale la hoja,
+   siempre en tinta negra sobre papel blanco aunque la pantalla esté en modo oscuro. */
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    margin: 14mm;
   }
-  .hoja-imprimible, .hoja-imprimible * {
-    visibility: visible;
+  html,
+  body {
+    background: #fff !important;
+  }
+  body:has(> dialog[open]) > #root {
+    display: none;
+  }
+  dialog[open] {
+    position: static;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+    background: #fff;
+    overflow: visible;
+  }
+  dialog[open] * {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  dialog::backdrop {
+    background: transparent;
   }
   .hoja-imprimible {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    box-shadow: none;
+    --surface: #fff;
+    --fg: #000;
+    --fg-muted: #333;
+    --line: #999;
+    --warn: #000;
+    --warn-line: #000;
+    max-width: none;
     border: 0;
+    padding: 0;
     color: #000;
     background: #fff;
   }
