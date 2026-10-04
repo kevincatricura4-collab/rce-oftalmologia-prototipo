@@ -105,7 +105,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
         ) : (
           <fieldset disabled={soloLectura}>
             <legend className="sr-only">Valores de la receta óptica por ojo</legend>
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[28rem] border-collapse">
                 <thead>
                   <tr className="border-b border-line bg-muted text-sm">
@@ -176,7 +176,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                     </Seleccion>
                   )}
                 </Campo>
-                <Campo etiqueta="Dosis">{(p) => <Entrada {...p} value={m.dosis} placeholder="1 gota" onChange={(e) => editarMed(m.id, { dosis: e.target.value })} />}</Campo>
+                <Campo etiqueta="Dosis">{(p) => <Entrada {...p} value={m.dosis} placeholder="Ej.: 1 gota" onChange={(e) => editarMed(m.id, { dosis: e.target.value })} />}</Campo>
                 <Campo etiqueta="Frecuencia">
                   {(p) => (
                     <Seleccion {...p} value={m.frecuencia} onChange={(e) => editarMed(m.id, { frecuencia: e.target.value })}>

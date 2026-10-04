@@ -15,9 +15,9 @@ function Vacio() {
   )
 }
 
-function Dato({ etiqueta, children, vacio }: { etiqueta: string; children?: ReactNode; vacio?: boolean }) {
+function Dato({ etiqueta, children, vacio, ancho }: { etiqueta: string; children?: ReactNode; vacio?: boolean; ancho?: boolean }) {
   return (
-    <div className="min-w-0">
+    <div className={ancho ? 'min-w-0 sm:col-span-2' : 'min-w-0'}>
       <dt className="text-[0.8125rem] font-medium text-fg-muted">{etiqueta}</dt>
       <dd className="mt-0.5">{vacio ? <Vacio /> : children}</dd>
     </div>
@@ -51,11 +51,9 @@ export function TarjetaSic({ sic, compacta = false }: { sic: Sic; compacta?: boo
           {sic.sospecha}
         </Dato>
         {!compacta && (
-          <div className="sm:col-span-2">
-            <Dato etiqueta="Fundamento de la derivación" vacio={!sic.fundamento}>
-              {sic.fundamento}
-            </Dato>
-          </div>
+          <Dato etiqueta="Fundamento de la derivación" vacio={!sic.fundamento} ancho>
+            {sic.fundamento}
+          </Dato>
         )}
         <Dato etiqueta="Agudeza visual previa" vacio={!sic.avPrevia}>
           {sic.avPrevia && (

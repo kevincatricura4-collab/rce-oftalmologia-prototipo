@@ -1,7 +1,7 @@
 import { Prohibit } from '@phosphor-icons/react'
-import type { ReactNode } from 'react'
-import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { Layout, inicioDeRol } from './components/Layout'
+import { useEffect, type ReactNode } from 'react'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Layout, inicioDeRol, useTituloPagina } from './components/Layout'
 import { useEstado } from './lib/store'
 import type { Rol } from './lib/tipos'
 import { Admin } from './pages/Admin'
@@ -16,19 +16,26 @@ import { Reportes } from './pages/Reportes'
 function Solo({ roles, children }: { roles: Rol[]; children: ReactNode }) {
   const { usuario } = useEstado()
   if (!usuario) return <Navigate to="/" replace />
-  if (!roles.includes(usuario.rol)) {
-    return (
-      <div className="mx-auto max-w-xl rounded-lg border border-line bg-surface p-6 text-center">
-        <Prohibit size={32} className="mx-auto text-fg-muted" aria-hidden="true" />
-        <h1 className="mt-3 text-xl font-bold">Esta pantalla no corresponde a su perfil</h1>
-        <p className="mt-2 text-fg-muted">Cada rol ve solo lo que necesita para su trabajo (Ley 21.719). El intento queda en el registro de accesos.</p>
-        <Link to={inicioDeRol(usuario.rol)} className="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 font-medium text-on-primary hover:bg-primary-hover">
-          Ir a mi inicio
-        </Link>
-      </div>
-    )
-  }
+  if (!roles.includes(usuario.rol)) return <SinAcceso rol={usuario.rol} />
   return children
+}
+
+function SinAcceso({ rol }: { rol: Rol }) {
+  const { auditar } = useEstado()
+  const { pathname } = useLocation()
+  useTituloPagina('Sin acceso')
+  useEffect(() => auditar('Acceso denegado por rol', pathname), [auditar, pathname])
+
+  return (
+    <div className="mx-auto max-w-xl rounded-lg border border-line bg-surface p-6 text-center">
+      <Prohibit size={32} className="mx-auto text-fg-muted" aria-hidden="true" />
+      <h1 className="mt-3 text-xl font-bold">Esta pantalla no corresponde a su perfil</h1>
+      <p className="mt-2 text-fg-muted">Cada rol ve solo lo que necesita para su trabajo (Ley 21.719). El intento queda en el registro de accesos.</p>
+      <Link to={inicioDeRol(rol)} className="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 font-medium text-on-primary hover:bg-primary-hover">
+        Ir a mi inicio
+      </Link>
+    </div>
+  )
 }
 
 const CLINICOS: Rol[] = ['oftalmologo', 'tecnologo']

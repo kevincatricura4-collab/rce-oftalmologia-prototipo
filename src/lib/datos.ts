@@ -252,7 +252,7 @@ export const CONSULTAS: Consulta[] = [
     anamnesis: { motivo: 'Control de glaucoma. Refiere buena adherencia a timolol en OD.', antecedentesOculares: 'Glaucoma primario de ángulo abierto OD en tratamiento desde marzo 2026.', antecedentesSistemicos: ['Hipertensión arterial'], otroSistemico: '', farmacos: 'Losartán 50 mg; timolol 0,5% OD cada 12 horas' },
     hallazgos: {
       gl_n_control: { AO: '3' },
-      gl_fecha_anterior: { AO: '2026-06-15' },
+      gl_fecha_anterior: { AO: '15-06-2026' },
       av_sc: ojos('0,5', '0,3'),
       av_cc: ojos('0,8', '0,6'),
       av_estenopeico: ojos('0,8', '0,6'),
@@ -265,7 +265,7 @@ export const CONSULTAS: Consulta[] = [
       ...bioNormal(),
       gl_hipotensor: ojos('Timolol 0,5% colirio', ''),
       gl_posologia: ojos('Cada 12 horas', ''),
-      gl_inicio: ojos('2026-03-10', ''),
+      gl_inicio: ojos('10-03-2026', ''),
     },
     ordenesExamen: [{ id: 'o-c3-1', examen: 'Campimetría computarizada', ojo: 'AO', indicacion: 'Control de glaucoma, estrategia 24-2', estado: 'Emitida', referenciaResultado: '', emitida: `${J}T08:56` }],
     registros: [

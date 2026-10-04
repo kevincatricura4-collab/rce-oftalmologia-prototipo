@@ -107,3 +107,27 @@ export function nuevoId(prefijo: string): string {
   contador += 1
   return `${prefijo}-${Date.now().toString(36)}-${contador}`
 }
+
+/**
+ * Fecha escrita a mano en formato chileno. Acepta 15-06-2026, 15/6/2026 o 15062026 y devuelve
+ * dd-mm-aaaa. No se usa <input type="date"> porque muestra el formato del idioma del navegador
+ * (mm/dd/yyyy en un navegador en inglés).
+ */
+export function normalizarFecha(texto: string): string {
+  const t = texto.trim()
+  const m = t.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/) ?? t.match(/^(\d{2})(\d{2})(\d{4})$/)
+  if (!m) return t
+  const [d, mes, a] = [Number(m[1]), Number(m[2]), m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3])]
+  if (d < 1 || d > 31 || mes < 1 || mes > 12) return t
+  return `${dosDigitos(d)}-${dosDigitos(mes)}-${a}`
+}
+
+/** Hora en formato de 24 horas: acepta 8:31, 0831 u 831 y devuelve hh:mm. */
+export function normalizarHora(texto: string): string {
+  const t = texto.trim()
+  const m = t.match(/^(\d{1,2})[:.h]?(\d{2})$/)
+  if (!m) return t
+  const [h, min] = [Number(m[1]), Number(m[2])]
+  if (h > 23 || min > 59) return t
+  return `${dosDigitos(h)}:${dosDigitos(min)}`
+}

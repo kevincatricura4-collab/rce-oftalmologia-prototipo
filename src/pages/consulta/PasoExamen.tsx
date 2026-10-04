@@ -32,7 +32,9 @@ export function PasoExamen({ consulta, cita, plantilla, soloLectura, actualizar 
           </h2>
           {!soloLectura && (
             <p className="text-[0.8125rem] text-fg-muted">
-              {pendientes.length ? `${pendientes.length} campos del tipo de atención se revisan al cerrar` : 'Campos del tipo de atención completos'}
+              {pendientes.length
+                ? `${pendientes.length === 1 ? 'Falta 1 campo obligatorio' : `Faltan ${pendientes.length} campos obligatorios`} de ${plantilla.nombre.toLowerCase()}; se revisan al cerrar`
+                : `Campos obligatorios de ${plantilla.nombre.toLowerCase()} completos`}
             </p>
           )}
         </div>

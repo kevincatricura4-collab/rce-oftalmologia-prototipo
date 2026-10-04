@@ -1,8 +1,8 @@
-import { ArrowRight, ClockCounterClockwise, WarningCircle } from '@phosphor-icons/react'
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight, CheckCircle, ClockCounterClockwise, WarningCircle, X } from '@phosphor-icons/react'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ESTADOS, EstadoCita, ORDEN_ESTADOS } from '../components/EstadoCita'
-import { TituloPantalla } from '../components/Layout'
+import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { cx } from '../components/ui'
 import { avisoSic, estadoCita } from '../lib/consulta'
 import { establecimiento, paciente as buscarPaciente, sic as buscarSic } from '../lib/datos'
@@ -15,17 +15,37 @@ const claseAccion = 'inline-flex h-9 items-center justify-center gap-1.5 whitesp
 const accionPrincipal = cx(claseAccion, 'bg-primary text-on-primary hover:bg-primary-hover')
 const accionSecundaria = cx(claseAccion, 'border border-line-strong bg-surface hover:bg-muted')
 
+/** Mensaje que deja otra pantalla al volver a la agenda (p. ej. "Pre-atención guardada"). */
+export interface EstadoNavegacionAgenda {
+  aviso?: string
+}
+
 /** Pantalla 1 — Agenda del día del box. La citación es del SOME: aquí es de lectura. */
 export function Agenda() {
   const { datos, usuario, abrirConsulta } = useEstado()
   const navegar = useNavigate()
+  const location = useLocation()
   const [filtro, setFiltro] = useState<EstadoAtencion | null>(null)
+  const [aviso, setAviso] = useState<string | null>((location.state as EstadoNavegacionAgenda | null)?.aviso ?? null)
+  useTituloPagina('Agenda del día')
+
+  // El aviso se muestra una vez: se limpia del historial para que no reaparezca al recargar.
+  useEffect(() => {
+    if (location.state) navegar(location.pathname, { replace: true, state: null })
+  }, [location.state, location.pathname, navegar])
+
   if (!usuario) return null
 
   const filas = datos.citas.map((cita) => ({ cita, estado: estadoCita(cita, datos.consultas) }))
   const conteo = Object.fromEntries(ORDEN_ESTADOS.map((e) => [e, filas.filter((f) => f.estado === e).length])) as Record<EstadoAtencion, number>
   const visibles = filtro ? filas.filter((f) => f.estado === filtro) : filas
   const esMedico = usuario.rol === 'oftalmologo'
+
+  // Lo que sigue según el rol: el oftalmólogo retoma su consulta abierta o llama al siguiente con
+  // pre-atención; el tecnólogo, al siguiente en espera.
+  const siguiente = esMedico
+    ? (filas.find((f) => f.estado === 'en_atencion') ?? filas.find((f) => f.estado === 'con_pre_atencion'))
+    : filas.find((f) => f.estado === 'en_espera')
 
   const abrir = (cita: Cita) => {
     const id = abrirConsulta(cita.id)
@@ -88,7 +108,28 @@ export function Agenda() {
         }
       />
 
-      <div role="group" aria-label="Filtrar por estado" className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+      {aviso && (
+        <div role="status" className="mb-5 flex items-start gap-3 rounded-lg border border-ok/50 bg-ok-soft px-4 py-3">
+          <CheckCircle size={20} weight="fill" className="mt-0.5 shrink-0 text-ok" aria-hidden="true" />
+          <p className="flex-1 font-medium">{aviso}</p>
+          <button type="button" onClick={() => setAviso(null)} aria-label="Cerrar aviso" className="-my-1 grid size-8 place-items-center rounded-md hover:bg-surface">
+            <X size={16} aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      {siguiente && (
+        <section aria-label="Siguiente paciente" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/40 bg-primary-soft px-4 py-3">
+          <p>
+            <span className="text-sm font-medium text-fg-muted">{siguiente.estado === 'en_atencion' ? 'Consulta en curso' : 'Siguiente paciente'} · </span>
+            <span className="tnum font-semibold">{siguiente.cita.hora}</span> <span className="font-semibold">{buscarPaciente(siguiente.cita.pacienteId).nombre}</span>
+            <span className="text-fg-muted"> · {NOMBRE_TIPO[siguiente.cita.tipoSugerido].toLowerCase()} · {ESTADOS[siguiente.estado].nombre.toLowerCase()}</span>
+          </p>
+          <div className="flex flex-wrap justify-end gap-2">{acciones(siguiente.cita, siguiente.estado)}</div>
+        </section>
+      )}
+
+      <div role="group" aria-label="Filtrar por estado" className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-4">
         {ORDEN_ESTADOS.map((e) => {
           const { nombre, icono: Icono } = ESTADOS[e]
           const activo = filtro === e
@@ -106,7 +147,7 @@ export function Agenda() {
               <span className={cx('grid size-10 shrink-0 place-items-center rounded-md', ESTADOS[e].clase)} aria-hidden="true">
                 <Icono size={22} />
               </span>
-              <span>
+              <span className="min-w-0">
                 <span className="tnum block font-display text-2xl leading-none font-bold">{conteo[e]}</span>
                 <span className="mt-1 block text-sm text-fg-muted">{nombre}</span>
               </span>
@@ -114,21 +155,34 @@ export function Agenda() {
           )
         })}
       </div>
+      <p className="mb-3 flex min-h-8 flex-wrap items-center gap-2 text-sm text-fg-muted" aria-live="polite">
+        {filtro ? (
+          <>
+            Mostrando {conteo[filtro]} de {filas.length}: {ESTADOS[filtro].nombre.toLowerCase()}.
+            <button type="button" onClick={() => setFiltro(null)} className="inline-flex h-8 items-center gap-1 rounded-md px-2 font-medium text-primary hover:bg-primary-soft">
+              <X size={14} aria-hidden="true" /> Ver todos
+            </button>
+          </>
+        ) : (
+          'Pulse un estado para filtrar la lista.'
+        )}
+      </p>
 
-      <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-        <table className="w-full min-w-[40rem] border-collapse text-left">
+      {/* Bajo 768 px cada fila se vuelve tarjeta (hora y paciente arriba, estado y acción abajo): la acción nunca queda fuera de la vista. */}
+      <div className="rounded-lg border border-line relative bg-surface md:overflow-x-auto">
+        <table className="w-full border-collapse text-left max-md:block md:min-w-[40rem]">
           <caption className="sr-only">Pacientes citados en la jornada{filtro ? `, filtrados por estado ${ESTADOS[filtro].nombre}` : ''}</caption>
-          <thead className="bg-muted text-sm">
+          <thead className="bg-muted text-sm max-md:sr-only">
             <tr>
-              <th scope="col" className="px-3 py-2.5 font-semibold sm:px-4">Hora</th>
+              <th scope="col" className="w-16 px-3 py-2.5 font-semibold sm:px-4">Hora</th>
               <th scope="col" className="px-3 py-2.5 font-semibold">Paciente</th>
               <th scope="col" className="hidden px-3 py-2.5 font-semibold xl:table-cell">Derivación</th>
-              <th scope="col" className="hidden px-3 py-2.5 font-semibold lg:table-cell">Tipo sugerido</th>
+              <th scope="col" className="hidden px-3 py-2.5 font-semibold xl:table-cell">Tipo sugerido</th>
               <th scope="col" className="px-3 py-2.5 font-semibold">Estado</th>
               <th scope="col" className="px-3 py-2.5 text-right font-semibold sm:px-4">Acción</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="max-md:block">
             {visibles.map(({ cita, estado }) => {
               const p = buscarPaciente(cita.pacienteId)
               const s = buscarSic(cita.sicId)
@@ -136,39 +190,42 @@ export function Agenda() {
               const aviso = avisoSic(s)
               const derivacion = (
                 <>
-                  <span className="block">{est.nombre}</span>
-                  <span className="block text-fg-muted">
-                    {s.sospecha ? `Sospecha: ${s.sospecha.toLowerCase()}` : 'Sin sospecha diagnóstica'}
-                    {est.tipo === 'UAPO' && ' · deriva tecnólogo médico'}
+                  <span className="block">
+                    {est.nombre}
+                    {est.tipo === 'UAPO' && <span className="text-fg-muted"> · deriva tecnólogo médico</span>}
                   </span>
+                  <span className="block text-fg-muted">{s.sospecha ? `Sospecha: ${s.sospecha.toLowerCase()}` : 'Sin sospecha diagnóstica'}</span>
                   {aviso && (
-                    <span className="mt-0.5 inline-flex items-center gap-1 font-medium text-warn">
-                      <WarningCircle size={14} aria-hidden="true" />
+                    <span className="mt-0.5 flex items-start gap-1 font-medium text-warn">
+                      <WarningCircle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
                       {aviso}
                     </span>
                   )}
                 </>
               )
               return (
-                <tr key={cita.id} className="border-t border-line align-top">
-                  <td className="tnum px-3 py-3 font-semibold sm:px-4">{cita.hora}</td>
-                  <td className="px-3 py-3">
+                <tr key={cita.id} className="border-t border-line align-top first:border-t-0 max-md:grid max-md:grid-cols-[3.5rem_1fr] max-md:py-1 md:first:border-t">
+                  <td className="tnum px-3 py-3 font-semibold max-md:pb-0 sm:px-4">{cita.hora}</td>
+                  <td className="px-3 py-3 max-md:pb-2">
                     <span className="block font-semibold">{p.nombre}</span>
                     <span className="block text-sm text-fg-muted">
-                      {edad(p.fechaNacimiento)} años · Ficha {p.ficha} · <span className={p.tipoDocumento === 'RUN' ? undefined : 'font-semibold text-fg'}>{documento(p)}</span>
+                      <span className="whitespace-nowrap">{edad(p.fechaNacimiento)} años</span> · <span className="whitespace-nowrap">Ficha {p.ficha}</span> ·{' '}
+                      <span className={cx('whitespace-nowrap', p.tipoDocumento !== 'RUN' && 'font-semibold text-fg')}>{documento(p)}</span>
                     </span>
-                    <span className="mt-1 block text-sm xl:hidden">{derivacion}</span>
-                    <span className="mt-1 block text-sm lg:hidden">Tipo sugerido: {NOMBRE_TIPO[cita.tipoSugerido]}</span>
+                    <span className="mt-1.5 block text-sm xl:hidden">
+                      <span className="mb-0.5 block font-medium">{NOMBRE_TIPO[cita.tipoSugerido]}</span>
+                      {derivacion}
+                    </span>
                   </td>
                   <td className="hidden px-3 py-3 text-sm xl:table-cell">{derivacion}</td>
-                  <td className="hidden px-3 py-3 text-sm lg:table-cell">{NOMBRE_TIPO[cita.tipoSugerido]}</td>
-                  <td className="px-3 py-3">
+                  <td className="hidden px-3 py-3 text-sm xl:table-cell">{NOMBRE_TIPO[cita.tipoSugerido]}</td>
+                  <td className="px-3 py-3 max-md:col-start-2 max-md:py-1">
                     <EstadoCita estado={estado} />
                   </td>
-                  <td className="px-3 py-3 sm:px-4">
-                    <div className="flex flex-col items-end gap-2">
+                  <td className="px-3 py-3 max-md:col-start-2 max-md:pt-1 sm:px-4">
+                    <div className="flex flex-col items-end gap-2 max-md:flex-row max-md:flex-wrap max-md:items-center">
                       {acciones(cita, estado)}
-                      <Link to={`/historial/${p.id}`} className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                      <Link to={`/historial/${p.id}`} className="inline-flex min-h-8 items-center gap-1 text-sm font-medium text-primary hover:underline">
                         <ClockCounterClockwise size={14} aria-hidden="true" />
                         Historial<span className="sr-only"> de {p.nombre}</span>
                       </Link>

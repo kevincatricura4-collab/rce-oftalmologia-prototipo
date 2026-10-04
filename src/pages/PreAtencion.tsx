@@ -2,13 +2,15 @@ import { FloppyDisk } from '@phosphor-icons/react'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../components/EncabezadoPaciente'
+import { useTituloPagina } from '../components/Layout'
 import { TarjetaSic } from '../components/TarjetaSic'
 import { AreaTexto, Aviso, Boton, Campo, Entrada, Segmentado, claseEntrada, cx } from '../components/ui'
 import { estadoCita } from '../lib/consulta'
-import { sic as buscarSic } from '../lib/datos'
-import { aNumero, comaDecimal, hora, marcaTiempo } from '../lib/formato'
+import { paciente as buscarPaciente, sic as buscarSic } from '../lib/datos'
+import { aNumero, comaDecimal, hora, marcaTiempo, normalizarHora } from '../lib/formato'
 import { useEstado, usuarioPorId } from '../lib/store'
 import type { Ojo, PreAtencion as TPreAtencion } from '../lib/tipos'
+import type { EstadoNavegacionAgenda } from './Agenda'
 
 type ClaveOjos = 'avSc' | 'avCc' | 'avEstenopeico' | 'pio'
 
@@ -39,6 +41,7 @@ export function PreAtencion() {
   const cita = datos.citas.find((c) => c.id === citaId)
   const [pa, setPa] = useState<TPreAtencion>(() => cita?.preAtencion ?? vacia(usuario?.id ?? ''))
   const [error, setError] = useState('')
+  useTituloPagina(cita ? `Pre-atención · Ficha ${buscarPaciente(cita.pacienteId).ficha}` : 'Pre-atención')
 
   if (!cita || !usuario) return <Navigate to="/agenda" replace />
   const sic = buscarSic(cita.sicId)
@@ -56,8 +59,11 @@ export function PreAtencion() {
       setError('Registre al menos una agudeza visual o una PIO para pasar al paciente a "Con pre-atención".')
       return
     }
-    guardarPreAtencion(cita.id, { ...pa, autorId: usuario.id, fecha: marcaTiempo() })
-    navegar('/agenda')
+    guardarPreAtencion(cita.id, { ...pa, horaPio: normalizarHora(pa.horaPio), autorId: usuario.id, fecha: marcaTiempo() })
+    const estado: EstadoNavegacionAgenda = {
+      aviso: `Pre-atención de ${buscarPaciente(cita.pacienteId).nombre} guardada. Pasa a "Con pre-atención" y el oftalmólogo verá la AV y la PIO precargadas en el examen.`,
+    }
+    navegar('/agenda', { state: estado })
   }
 
   return (
@@ -80,7 +86,7 @@ export function PreAtencion() {
                 La pre-atención queda como registro. Si hay que corregir un valor, lo hace el oftalmólogo en el examen.
               </Aviso>
             )}
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[30rem] border-collapse">
                 <caption className="sr-only">Agudeza visual y PIO. Columnas: ojo derecho (OD) y ojo izquierdo (OI).</caption>
                 <thead>
@@ -134,7 +140,9 @@ export function PreAtencion() {
                   { valor: 'Rebote', texto: 'Rebote' },
                 ]}
               />
-              <Campo etiqueta="Hora de la toma">{(p) => <Entrada {...p} type="time" value={pa.horaPio} onChange={(e) => setPa((x) => ({ ...x, horaPio: e.target.value }))} />}</Campo>
+              <Campo etiqueta="Hora de la toma (24 h)">
+                {(p) => <Entrada {...p} inputMode="numeric" maxLength={5} value={pa.horaPio} onChange={(e) => setPa((x) => ({ ...x, horaPio: e.target.value }))} onBlur={(e) => setPa((x) => ({ ...x, horaPio: normalizarHora(e.target.value) }))} />}
+              </Campo>
             </div>
             <Campo etiqueta="Observaciones" className="mt-4">
               {(p) => <AreaTexto {...p} rows={2} value={pa.observaciones} onChange={(e) => setPa((x) => ({ ...x, observaciones: e.target.value }))} placeholder="Ej.: no trae lentes, paciente no colabora con tonometría" />}

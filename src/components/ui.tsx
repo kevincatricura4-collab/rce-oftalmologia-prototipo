@@ -19,6 +19,9 @@ const VARIANTES: Record<Variante, string> = {
   peligro: 'border border-danger bg-surface text-danger hover:bg-danger-soft',
 }
 
+// Deshabilitado: gris legible en vez de transparencia, para que se lea qué acción falta habilitar.
+const DESHABILITADO = 'disabled:border-line disabled:bg-muted disabled:text-fg-muted disabled:hover:bg-muted'
+
 interface PropsBoton extends ButtonHTMLAttributes<HTMLButtonElement> {
   variante?: Variante
   icono?: Icon
@@ -30,9 +33,10 @@ export function Boton({ variante = 'secundario', icono: Icono, pequeno, classNam
     <button
       type={type}
       className={cx(
-        'inline-flex shrink-0 items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150 disabled:opacity-50',
+        'inline-flex shrink-0 items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150',
         pequeno ? 'h-8 px-2.5 text-sm' : 'h-10 px-4 text-[0.9375rem]',
         VARIANTES[variante],
+        DESHABILITADO,
         className,
       )}
       {...resto}
@@ -45,8 +49,11 @@ export function Boton({ variante = 'secundario', icono: Icono, pequeno, classNam
 
 // ---------- Campos ----------
 
+// El placeholder usa fg-muted completo (contraste 4,5:1) y desaparece en solo lectura, para que un
+// ejemplo nunca se lea como dato registrado. :read-only se limita a input y textarea: en un select
+// siempre es verdadero y lo haría ver deshabilitado.
 export const claseEntrada =
-  'h-10 w-full min-w-0 rounded-md border border-line-strong bg-surface px-3 text-[0.9375rem] text-fg transition-colors duration-150 placeholder:text-fg-muted/70 disabled:border-line disabled:bg-muted disabled:text-fg read-only:bg-muted'
+  'h-10 w-full min-w-0 rounded-md border border-line-strong bg-surface px-3 text-[0.9375rem] text-fg transition-colors duration-150 placeholder:text-fg-muted disabled:border-line disabled:bg-muted disabled:text-fg disabled:placeholder:text-transparent [&:is(input,textarea):read-only]:bg-muted [&:is(input,textarea):read-only]:placeholder:text-transparent'
 
 export function Entrada({ className, ...resto }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cx(claseEntrada, className)} {...resto} />
@@ -124,8 +131,12 @@ export function Segmentado<T extends string>({ nombre, etiqueta, opciones, valor
               'inline-flex items-center justify-center rounded-md border font-medium transition-colors duration-150',
               'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring',
               pequeno ? 'h-8 min-w-11 px-2.5 text-sm' : 'h-10 px-4',
-              valor === o.valor ? 'border-primary bg-primary-soft text-fg ring-1 ring-primary' : 'border-line-strong bg-surface text-fg hover:bg-muted',
-              disabled && 'cursor-default opacity-80 hover:bg-surface',
+              valor === o.valor
+                ? 'border-primary bg-primary-soft text-fg ring-1 ring-primary'
+                : disabled
+                  ? 'border-line bg-surface text-fg-muted'
+                  : 'border-line-strong bg-surface text-fg hover:bg-muted',
+              disabled && 'cursor-default',
             )}
           >
             <input type="radio" className="sr-only" name={nombre} value={o.valor} checked={valor === o.valor} onChange={() => onCambio(o.valor)} />
