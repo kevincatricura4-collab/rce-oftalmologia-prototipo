@@ -80,7 +80,8 @@ export type TipoCampo =
   | 'opciones' // varias opciones de una lista
   | 'si_no'
   | 'ojo' // elegir OD / OI / AO
-  | 'fecha'
+  | 'fecha' // dd-mm-aaaa
+  | 'hora' // hh:mm, 24 horas
 
 /**
  * por_ojo: un valor para OD y otro para OI (dos columnas).
@@ -111,6 +112,8 @@ export interface GrupoPlantilla {
   nombre: string
   /** Atajo "Sin hallazgos" por ojo: llena los campos de texto del grupo. */
   sinHallazgos?: boolean
+  /** Atajo "Copiar OD → OI": solo en hallazgos descriptivos, nunca en mediciones como AV o PIO. */
+  copiarOdOi?: boolean
 }
 
 /** tipo_atencion (Questionnaire) */

@@ -1,7 +1,7 @@
 import { Plus, Trash, UserMinus, UserPlus } from '@phosphor-icons/react'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
-import { TituloPantalla } from '../components/Layout'
+import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { Aviso, Boton, Campo, Entrada, Insignia, Segmentado, Seleccion, Tarjeta } from '../components/ui'
 import { camposPorGrupo } from '../lib/consulta'
 import { fechaHora, nuevoId } from '../lib/formato'
@@ -30,6 +30,7 @@ export function Admin() {
 // ---------- Usuarios y roles ----------
 
 function Usuarios() {
+  useTituloPagina('Usuarios y roles')
   const { datos, usuario, guardarUsuario } = useEstado()
   const [nuevo, setNuevo] = useState({ nombre: '', run: '', profesion: '', rol: 'oftalmologo' as Rol, ubicacion: '' })
   const [error, setError] = useState('')
@@ -48,7 +49,7 @@ function Usuarios() {
   return (
     <div className="mx-auto max-w-[72rem]">
       <TituloPantalla titulo="Usuarios y roles" detalle="Alta, baja y asignación de rol. Cada cambio queda en el registro de accesos." />
-      <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+      <div className="relative overflow-x-auto rounded-lg border border-line bg-surface">
         <table className="w-full min-w-[44rem] border-collapse text-left">
           <caption className="sr-only">Usuarios del sistema</caption>
           <thead className="bg-muted text-sm">
@@ -84,7 +85,7 @@ function Usuarios() {
                   {u.id === usuario?.id ? (
                     <span className="text-sm text-fg-muted">Sesión actual</span>
                   ) : u.activo ? (
-                    <Boton pequeno variante="peligro" icono={UserMinus} onClick={() => guardarUsuario({ ...u, activo: false })}>
+                    <Boton pequeno icono={UserMinus} onClick={() => confirm(`¿Dar de baja a ${u.nombre}? No podrá ingresar al sistema; sus registros se conservan.`) && guardarUsuario({ ...u, activo: false })}>
                       Dar de baja
                     </Boton>
                   ) : (
@@ -102,7 +103,7 @@ function Usuarios() {
       <Tarjeta id="nuevo-usuario" titulo="Nuevo usuario" className="mt-6">
         <form onSubmit={crear} noValidate className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Campo etiqueta="Nombre completo">{(p) => <Entrada {...p} value={nuevo.nombre} onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })} />}</Campo>
-          <Campo etiqueta="RUN" ayuda="Datos de prueba: no usar RUN reales.">{(p) => <Entrada {...p} value={nuevo.run} placeholder="90.000.000-0" onChange={(e) => setNuevo({ ...nuevo, run: e.target.value })} />}</Campo>
+          <Campo etiqueta="RUN" ayuda="Datos de prueba: no usar RUN reales.">{(p) => <Entrada {...p} value={nuevo.run} placeholder="Ej.: 90.000.000-0" onChange={(e) => setNuevo({ ...nuevo, run: e.target.value })} />}</Campo>
           <Campo etiqueta="Profesión">{(p) => <Entrada {...p} value={nuevo.profesion} onChange={(e) => setNuevo({ ...nuevo, profesion: e.target.value })} />}</Campo>
           <Campo etiqueta="Rol">
             {(p) => (
@@ -115,7 +116,7 @@ function Usuarios() {
               </Seleccion>
             )}
           </Campo>
-          <Campo etiqueta="Ubicación">{(p) => <Entrada {...p} value={nuevo.ubicacion} placeholder="Box 3" onChange={(e) => setNuevo({ ...nuevo, ubicacion: e.target.value })} />}</Campo>
+          <Campo etiqueta="Ubicación">{(p) => <Entrada {...p} value={nuevo.ubicacion} placeholder="Ej.: Box 3" onChange={(e) => setNuevo({ ...nuevo, ubicacion: e.target.value })} />}</Campo>
           <div className="flex items-end">
             <Boton type="submit" variante="primario" icono={UserPlus}>
               Crear usuario
@@ -143,10 +144,12 @@ const NOMBRE_TIPO_CAMPO: Record<TipoCampo, string> = {
   opciones: 'Varias opciones de una lista',
   si_no: 'Sí / No',
   ojo: 'Elegir ojo (OD / OI / AO)',
-  fecha: 'Fecha',
+  fecha: 'Fecha (dd-mm-aaaa)',
+  hora: 'Hora (24 h)',
 }
 
 function Plantillas() {
+  useTituloPagina('Plantillas de atención')
   const { datos, guardarPlantilla } = useEstado()
   const [tipo, setTipo] = useState<TipoAtencionId>('glaucoma')
   const plantilla = datos.plantillas[tipo]
@@ -276,9 +279,9 @@ function Plantillas() {
               )}
             </Campo>
             {(campo.tipo === 'opcion' || campo.tipo === 'opciones') && (
-              <Campo etiqueta="Opciones" ayuda="Separadas por coma.">{(p) => <Entrada {...p} value={campo.opciones} placeholder="Grado I, Grado II, Grado III, Grado IV" onChange={(e) => setCampo({ ...campo, opciones: e.target.value })} />}</Campo>
+              <Campo etiqueta="Opciones" ayuda="Separadas por coma.">{(p) => <Entrada {...p} value={campo.opciones} placeholder="Ej.: Grado I, Grado II, Grado III" onChange={(e) => setCampo({ ...campo, opciones: e.target.value })} />}</Campo>
             )}
-            {(campo.tipo === 'numero' || campo.tipo === 'decimal') && <Campo etiqueta="Unidad (opcional)">{(p) => <Entrada {...p} value={campo.unidad} placeholder="mmHg, µm, D" onChange={(e) => setCampo({ ...campo, unidad: e.target.value })} />}</Campo>}
+            {(campo.tipo === 'numero' || campo.tipo === 'decimal') && <Campo etiqueta="Unidad (opcional)">{(p) => <Entrada {...p} value={campo.unidad} placeholder="Ej.: mmHg" onChange={(e) => setCampo({ ...campo, unidad: e.target.value })} />}</Campo>}
             <label className="inline-flex min-h-10 items-center gap-2">
               <input type="checkbox" className="size-4 accent-primary" checked={campo.obligatorio} onChange={(e) => setCampo({ ...campo, obligatorio: e.target.checked })} />
               Obligatorio al cerrar la consulta
@@ -301,6 +304,7 @@ function Plantillas() {
 // ---------- Catálogos ----------
 
 function CatalogosAdmin() {
+  useTituloPagina('Catálogos')
   const { datos, guardarCatalogos } = useEstado()
   return (
     <div className="mx-auto max-w-[72rem]">
@@ -350,6 +354,7 @@ function ListaCatalogo({ titulo, clave, catalogos, onGuardar, ejemplo }: { titul
 // ---------- Registro de accesos ----------
 
 function Auditoria() {
+  useTituloPagina('Registro de accesos')
   const { datos } = useEstado()
   return (
     <div className="mx-auto max-w-[72rem]">
@@ -357,7 +362,7 @@ function Auditoria() {
       {datos.auditoria.length === 0 ? (
         <Aviso titulo="Sin eventos en este recorrido">Ingrese como oftalmólogo o tecnólogo y abra una ficha: el acceso aparecerá aquí.</Aviso>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-line bg-surface">
+        <div className="relative overflow-x-auto rounded-lg border border-line bg-surface">
           <table className="w-full min-w-[40rem] border-collapse text-left">
             <caption className="sr-only">Eventos de auditoría, del más reciente al más antiguo</caption>
             <thead className="bg-muted text-sm">

@@ -1,13 +1,14 @@
 import { ArrowRight, Check, WarningOctagon } from '@phosphor-icons/react'
 import { camposPorGrupo, vieneDePreAtencion } from '../lib/consulta'
-import { aNumero, comaDecimal } from '../lib/formato'
+import { aNumero, comaDecimal, normalizarFecha, normalizarHora } from '../lib/formato'
 import { SIN_HALLAZGOS, campoVisible } from '../lib/plantillas'
 import type { CampoPlantilla, Hallazgos, Lateralidad, Ojo, Plantilla, PreAtencion } from '../lib/tipos'
 import { Segmentado, claseEntrada, cx } from './ui'
 
 // Formulario de examen dirigido por plantilla (RF-05, RF-06, RNF-07). No hay un formulario
 // escrito a mano por tipo de atención: filas, controles y atajos salen de la definición.
-// Columnas fijas Campo · OD · OI; nunca se invierte el orden.
+// Columnas fijas Campo · OD · OI; nunca se invierte el orden. En pantallas angostas la etiqueta
+// sube sobre la fila y OD / OI siguen lado a lado, para que OI nunca quede fuera de la vista.
 
 interface Props {
   plantilla: Plantilla
@@ -27,17 +28,17 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
   const grupos = camposPorGrupo(plantilla)
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-      <table className="w-full min-w-[34rem] border-collapse text-left">
+    <div className="rounded-lg border border-line relative bg-surface sm:overflow-x-auto">
+      <table className="w-full border-collapse text-left max-sm:block sm:min-w-[34rem]">
         <caption className="sr-only">Examen por ojo, {plantilla.nombre}. Columnas: campo, ojo derecho (OD), ojo izquierdo (OI).</caption>
         <colgroup>
           <col />
           <col className="w-[30%]" />
           <col className="w-[30%]" />
         </colgroup>
-        <thead className="bg-muted">
-          <tr className="border-b border-line">
-            <th scope="col" className="px-3 py-2.5 text-sm font-semibold sm:px-4">
+        <thead className="bg-muted max-sm:block">
+          <tr className="border-b border-line max-sm:grid max-sm:grid-cols-2">
+            <th scope="col" className="px-3 py-2.5 text-sm font-semibold max-sm:hidden sm:px-4">
               Campo
             </th>
             <th scope="col" className="px-2 py-2.5 text-center text-sm font-bold text-od">
@@ -53,25 +54,24 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
           const porOjo = visibles.filter((c) => c.lateralidad === 'por_ojo')
           const deTexto = porOjo.filter((c) => c.tipo === 'texto')
           const sinHallazgosEn = (ojo: Ojo) => deTexto.length > 0 && deTexto.every((c) => hallazgos[c.id]?.[ojo] === SIN_HALLAZGOS)
-          const odConDatos = porOjo.some((c) => hallazgos[c.id]?.OD)
+          // Copiar OD → OI solo donde la plantilla lo permite (hallazgos descriptivos), nunca en AV o PIO.
+          const copiables = grupo.copiarOdOi ? porOjo.filter((c) => hallazgos[c.id]?.OD) : []
 
           return (
-            <tbody key={grupo.nombre} className="border-b border-line last:border-b-0">
-              <tr className="bg-canvas/60">
-                <th scope="colgroup" className="px-3 pt-3 pb-1.5 sm:px-4">
+            <tbody key={grupo.nombre} className="border-b border-line last:border-b-0 max-sm:block">
+              <tr className="bg-canvas/60 max-sm:grid max-sm:grid-cols-2">
+                <th scope="colgroup" className="px-3 pt-3 pb-1.5 max-sm:col-span-2 sm:px-4">
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span className="font-display text-[0.9375rem] font-semibold">{grupo.nombre}</span>
-                    {!soloLectura && porOjo.length > 1 && odConDatos && (
+                    {!soloLectura && copiables.length > 0 && (
                       <button
                         type="button"
-                        onClick={() =>
-                          onVarios(porOjo.filter((c) => hallazgos[c.id]?.OD).map((c) => ({ campoId: c.id, lado: 'OI', valor: hallazgos[c.id]!.OD! })))
-                        }
+                        onClick={() => onVarios(copiables.map((c) => ({ campoId: c.id, lado: 'OI', valor: hallazgos[c.id]!.OD! })))}
                         className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-[0.8125rem] font-medium text-primary transition-colors duration-150 hover:bg-primary-soft"
                       >
                         Copiar OD
                         <ArrowRight size={14} aria-hidden="true" />
-                        OI
+                        OI<span className="sr-only">, {grupo.nombre}</span>
                       </button>
                     )}
                   </span>
@@ -98,7 +98,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                     )
                   })
                 ) : (
-                  <td colSpan={2} />
+                  <td colSpan={2} className="max-sm:hidden" />
                 )}
               </tr>
               {visibles.map((campo) => (
@@ -125,15 +125,15 @@ function FilaCampo({ campo, hallazgos, preAtencion, soloLectura, onCambio }: { c
   }
 
   return (
-    <tr className="border-t border-line/70">
-      <th scope="row" className="px-3 py-1.5 align-middle font-normal sm:px-4">
+    <tr className="border-t border-line/70 max-sm:grid max-sm:grid-cols-2">
+      <th scope="row" className="px-3 py-1.5 align-middle font-normal max-sm:col-span-2 max-sm:pb-0 sm:px-4">
         <span className="text-[0.9375rem]">{campo.etiqueta}</span>
         {campo.unidad && <span className="text-fg-muted"> ({campo.unidad})</span>}
         {origen && <span className="ml-2 inline-block text-[0.8125rem] text-fg-muted">{origen}</span>}
         {campo.personalizado && <span className="ml-2 inline-block text-[0.8125rem] text-fg-muted">campo agregado por configuración</span>}
       </th>
       {campo.lateralidad === 'AO' ? (
-        <td colSpan={2} className="px-2 py-1.5">
+        <td colSpan={2} className="px-2 py-1.5 max-sm:col-span-2">
           <Control campo={campo} lado="AO" valor={valor.AO ?? ''} soloLectura={soloLectura} onCambio={onCambio} />
         </td>
       ) : (
@@ -198,17 +198,24 @@ function Control({ campo, lado, valor, soloLectura, onCambio }: { campo: CampoPl
     default: {
       const pioAlta = campo.id === 'pio' && (aNumero(valor) ?? 0) > PIO_MAXIMA_NORMAL
       const esNumero = campo.tipo === 'numero' || campo.tipo === 'decimal'
+      // Fecha y hora como texto en formato chileno (dd-mm-aaaa, 24 h), sin depender del idioma del navegador.
+      const normalizar = campo.tipo === 'decimal' ? comaDecimal : campo.tipo === 'fecha' ? normalizarFecha : campo.tipo === 'hora' ? normalizarHora : null
+      const ayuda = campo.tipo === 'fecha' ? 'dd-mm-aaaa' : campo.tipo === 'hora' ? 'hh:mm' : campo.placeholder
       return (
         <>
           <input
-            aria-label={etiqueta}
-            type={campo.tipo === 'fecha' ? 'date' : 'text'}
-            inputMode={campo.tipo === 'numero' ? 'numeric' : campo.tipo === 'decimal' ? 'decimal' : undefined}
+            aria-label={`${etiqueta}${campo.tipo === 'fecha' ? ', formato día-mes-año' : ''}`}
+            type="text"
+            inputMode={campo.tipo === 'numero' || campo.tipo === 'hora' ? 'numeric' : campo.tipo === 'decimal' ? 'decimal' : undefined}
             value={valor}
             readOnly={soloLectura}
-            placeholder={soloLectura ? undefined : campo.placeholder}
+            placeholder={soloLectura ? undefined : ayuda}
             onChange={(e) => cambiar(e.target.value)}
-            onBlur={(e) => campo.tipo === 'decimal' && e.target.value.includes('.') && cambiar(comaDecimal(e.target.value))}
+            onBlur={(e) => {
+              if (!normalizar) return
+              const limpio = normalizar(e.target.value)
+              if (limpio !== e.target.value) cambiar(limpio)
+            }}
             aria-describedby={pioAlta ? `${campo.id}-${lado}-rango` : undefined}
             className={cx(claseEntrada, 'h-9', centrado && 'text-center', esNumero && 'font-medium', pioAlta && 'border-danger ring-1 ring-danger')}
           />

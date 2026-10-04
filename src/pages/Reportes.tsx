@@ -1,7 +1,7 @@
 import { CheckCircle, TestTube, WarningCircle } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { BarrasHorizontales, GraficoLinea, TablaDatos } from '../components/Graficos'
-import { TituloPantalla } from '../components/Layout'
+import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { Aviso, Seleccion, Tarjeta } from '../components/ui'
 import { CIE10, NOMBRE_DESENLACE } from '../lib/catalogos'
 import { mesAnio } from '../lib/formato'
@@ -18,6 +18,7 @@ export function Reportes() {
   const { datos } = useEstado()
   const registros = useMemo(simular, [])
   const [mes, setMes] = useState<string>('todos')
+  useTituloPagina('Reportes')
 
   const delMes = mes === 'todos' ? registros : registros.filter((r) => r.mes === Number(mes))
   const contar = <K extends string>(clave: (r: (typeof registros)[number]) => K) => {

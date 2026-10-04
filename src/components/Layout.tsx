@@ -1,5 +1,5 @@
 import { ArrowCounterClockwise, CalendarCheck, ChartBar, ClipboardText, ClockCounterClockwise, Folders, ListChecks, SignOut, Users, X, type Icon } from '@phosphor-icons/react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useEstado } from '../lib/store'
 import type { Rol } from '../lib/tipos'
@@ -19,7 +19,7 @@ interface ItemMenu {
 export const MENU: ItemMenu[] = [
   { ruta: '/agenda', texto: 'Agenda del box', icono: CalendarCheck, roles: ['oftalmologo', 'tecnologo'] },
   { ruta: '/historial', texto: 'Historial de pacientes', icono: ClockCounterClockwise, roles: ['oftalmologo', 'tecnologo'], nota: { tecnologo: 'Solo AV y PIO' } },
-  { ruta: '/reportes', texto: 'Reportes e indicadores', icono: ChartBar, roles: ['oftalmologo', 'jefatura'] },
+  { ruta: '/reportes', texto: 'Reportes', icono: ChartBar, roles: ['oftalmologo', 'jefatura'] },
   { ruta: '/admin/usuarios', texto: 'Usuarios y roles', icono: Users, roles: ['administrador'] },
   { ruta: '/admin/plantillas', texto: 'Plantillas de atención', icono: ClipboardText, roles: ['administrador'] },
   { ruta: '/admin/catalogos', texto: 'Catálogos', icono: Folders, roles: ['administrador'] },
@@ -98,12 +98,36 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
   )
 }
 
+/** Título de la pestaña del navegador por pantalla (WCAG 2.4.2). */
+export function useTituloPagina(titulo: string) {
+  useEffect(() => {
+    document.title = `${titulo} · RCE Oftalmología`
+  }, [titulo])
+}
+
 export function Layout() {
   const { usuario } = useEstado()
   const [menuAbierto, setMenuAbierto] = useState(false)
   const { pathname } = useLocation()
+  const contenido = useRef<HTMLElement>(null)
+  const cerrarMenu = useRef<HTMLButtonElement>(null)
+  const primeraCarga = useRef(true)
 
-  useEffect(() => setMenuAbierto(false), [pathname])
+  // Al cambiar de pantalla se vuelve arriba y el foco pasa al contenido, como en una carga de página:
+  // así "Continuar a diagnóstico" no deja al usuario al final del paso siguiente.
+  useEffect(() => {
+    setMenuAbierto(false)
+    if (primeraCarga.current) {
+      primeraCarga.current = false
+      return
+    }
+    window.scrollTo(0, 0)
+    contenido.current?.focus({ preventScroll: true })
+  }, [pathname])
+
+  useEffect(() => {
+    if (menuAbierto) cerrarMenu.current?.focus()
+  }, [menuAbierto])
 
   useEffect(() => {
     if (!menuAbierto) return
@@ -116,6 +140,17 @@ export function Layout() {
 
   return (
     <div className="min-h-dvh">
+      <a
+        href="#contenido"
+        onClick={(e) => {
+          // Con HashRouter el ancla cambiaría la ruta: se mueve el foco a mano.
+          e.preventDefault()
+          contenido.current?.focus()
+        }}
+        className="sr-only z-50 rounded-md bg-primary px-4 py-2 font-medium text-on-primary focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+      >
+        Saltar al contenido
+      </a>
       <BarraSuperior onMenu={() => setMenuAbierto(true)}>
         <span className="hidden text-sm whitespace-nowrap text-fg-muted lg:inline">
           {ROLES[usuario.rol].nombre} · {usuario.ubicacion}
@@ -133,7 +168,7 @@ export function Layout() {
             <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-xl">
               <div className="flex h-14 items-center justify-between border-b border-line px-4">
                 <span className="font-display font-semibold">Menú</span>
-                <button type="button" onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid size-10 place-items-center rounded-md hover:bg-muted">
+                <button ref={cerrarMenu} type="button" onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid size-10 place-items-center rounded-md hover:bg-muted">
                   <X size={20} aria-hidden="true" />
                 </button>
               </div>
@@ -144,7 +179,7 @@ export function Layout() {
           </div>
         )}
 
-        <main id="contenido" className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
+        <main id="contenido" ref={contenido} tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
           <Outlet />
         </main>
       </div>

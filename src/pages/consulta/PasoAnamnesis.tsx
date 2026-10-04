@@ -30,7 +30,7 @@ export function PasoAnamnesis({ consulta, soloLectura, actualizar }: PropsPaso) 
             {(p) => <AreaTexto {...p} rows={2} value={a.motivo} onChange={(e) => cambiar({ motivo: e.target.value })} placeholder="Ej.: control de glaucoma, baja de visión de lejos" />}
           </Campo>
           <Campo etiqueta="Antecedentes oftalmológicos">
-            {(p) => <AreaTexto {...p} rows={2} value={a.antecedentesOculares} onChange={(e) => cambiar({ antecedentesOculares: e.target.value })} placeholder="Cirugías, traumatismos, uso de lentes, glaucoma familiar" />}
+            {(p) => <AreaTexto {...p} rows={2} value={a.antecedentesOculares} onChange={(e) => cambiar({ antecedentesOculares: e.target.value })} placeholder="Ej.: cirugías, traumatismos, uso de lentes, glaucoma familiar" />}
           </Campo>
 
           <fieldset>

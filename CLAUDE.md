@@ -114,6 +114,12 @@ Decisiones tomadas al construir (confirmar con Kevin):
   gráficos separados), porque los tonos `od`/`oi` no se distinguen bien entre sí como par de
   series (validado con el skill dataviz).
 - Los RUN de prueba están sobre 90 millones (rango no asignado).
+- Fechas y horas se escriben como texto (dd-mm-aaaa, 24 h) y no con `type="date"`/`"time"`,
+  que muestran el formato del idioma del navegador.
+- Al cambiar la forma de los datos de prueba o de las plantillas, subir `CLAVE_DATOS` en
+  `lib/store.tsx` para que los navegadores con un recorrido guardado no queden con datos viejos.
+
+Auditoría de interfaz (axe-core, contraste, teclado, anchos, flujo completo): `docs/auditoria-ui.md`.
 
 Pendiente: revisión de Kevin y de un oftalmólogo; pruebas de usabilidad con el flujo real.
 

@@ -38,7 +38,7 @@ nunca hex ni colores de la paleta por defecto de Tailwind.
 | primary-soft | `bg-primary-soft` | `#E0F2FE` | `#0B3A52` | Fondo de elemento seleccionado |
 | on-primary | `text-on-primary` | `#FFFFFF` | `#04202E` | Texto sobre primary |
 | ok / ok-soft | `text-ok` `bg-ok-soft` | `#15803D` / `#DCFCE7` | `#4ADE80` / `#0F3A23` | Completo, cerrado, dentro de meta |
-| warn / warn-soft / warn-line | `text-warn` `bg-warn-soft` `border-warn-line` | `#92400E` / `#FEF3C7` / `#D97706` | `#FCD34D` / `#3B2A07` / `#D97706` | Dato faltante, SIC incompleta, pendiente |
+| warn / warn-soft / warn-line | `text-warn` `bg-warn-soft` `border-warn-line` | `#92400E` / `#FEF3C7` / `#B45309` | `#FCD34D` / `#3B2A07` / `#D97706` | Dato faltante, SIC incompleta, pendiente |
 | danger / danger-soft | `text-danger` `bg-danger-soft` | `#B91C1C` / `#FEE2E2` | `#FCA5A5` / `#4A1616` | Error, valor fuera de rango, acción destructiva |
 | od / od-soft | `text-od` `bg-od-soft` | `#0369A1` / `#E0F2FE` | `#7DD3FC` / `#0B3A52` | Ojo derecho |
 | oi / oi-soft | `text-oi` `bg-oi-soft` | `#0F766E` / `#CCFBF1` | `#5EEAD4` / `#0C3B38` | Ojo izquierdo |

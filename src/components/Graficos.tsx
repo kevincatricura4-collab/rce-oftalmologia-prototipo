@@ -143,7 +143,7 @@ export function TablaDatos({ titulo, columnas, filas }: { titulo: string; column
   return (
     <details className="mt-3 text-sm">
       <summary className="inline-flex min-h-8 items-center font-medium text-primary">Ver como tabla</summary>
-      <div className="mt-2 overflow-x-auto">
+      <div className="relative mt-2 overflow-x-auto">
         <table className="w-full border-collapse">
           <caption className="sr-only">{titulo}</caption>
           <thead>

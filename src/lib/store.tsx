@@ -45,7 +45,9 @@ interface Estado {
 const Contexto = createContext<Estado | null>(null)
 
 const CLAVE_TEMA = 'rce-tema'
-const CLAVE_DATOS = 'rce-datos-v1'
+// Subir la versión cuando cambie la forma de los datos de prueba o de las plantillas: así un navegador
+// que ya recorrió el prototipo no se queda con datos guardados en el formato anterior.
+const CLAVE_DATOS = 'rce-datos-v2'
 const CLAVE_SESION = 'rce-sesion'
 
 function datosIniciales(): Datos {

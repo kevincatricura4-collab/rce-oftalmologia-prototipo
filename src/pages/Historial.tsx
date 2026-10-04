@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../components/EncabezadoPaciente'
 import { GraficoLinea, TablaDatos } from '../components/Graficos'
-import { TituloPantalla } from '../components/Layout'
+import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { Aviso, Insignia, Tarjeta, claseEntrada, cx } from '../components/ui'
 import { NOMBRE_DESENLACE } from '../lib/catalogos'
 import { PACIENTES, SICS } from '../lib/datos'
@@ -19,6 +19,7 @@ function normalizar(t: string) {
 /** Pantalla 8 — lista de pacientes para elegir el historial. */
 export function ListaHistorial() {
   const [q, setQ] = useState('')
+  useTituloPagina('Historial de pacientes')
   const filtrados = PACIENTES.filter((p) => normalizar(`${p.nombre} ${p.ficha} ${p.documento}`).includes(normalizar(q.trim())))
   return (
     <div className="mx-auto max-w-4xl">
@@ -55,6 +56,7 @@ export function Historial() {
   const { pacienteId = '' } = useParams()
   const { datos, usuario, auditar } = useEstado()
   const p = PACIENTES.find((x) => x.id === pacienteId)
+  useTituloPagina(p ? `Historial · Ficha ${p.ficha}` : 'Historial')
 
   useEffect(() => {
     if (p) auditar('Lectura de historial', `Ficha ${p.ficha}`)
@@ -100,7 +102,7 @@ export function Historial() {
           {glaucoma && <EvolucionGlaucoma mediciones={mediciones} />}
 
           <Tarjeta id="av-pio" titulo={soloAvPio ? 'Agudeza visual y PIO por ojo' : 'Agudeza visual y PIO en el tiempo'}>
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[36rem] border-collapse text-left">
                 <thead className="bg-muted text-sm">
                   <tr>

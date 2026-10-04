@@ -26,7 +26,7 @@
   --ok-soft: #dcfce7;
   --warn: #92400e;
   --warn-soft: #fef3c7;
-  --warn-line: #d97706;
+  --warn-line: #b45309;
   --danger: #b91c1c;
   --danger-soft: #fee2e2;
   --od: #0369a1;
@@ -112,6 +112,10 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     text-wrap: balance;
+  }
+  /* Un fieldset crece por defecto hasta el ancho mínimo de su contenido y rompe el diseño en pantallas angostas. */
+  fieldset {
+    min-width: 0;
   }
   button, [role="button"], label[for], select, summary {
     cursor: pointer;

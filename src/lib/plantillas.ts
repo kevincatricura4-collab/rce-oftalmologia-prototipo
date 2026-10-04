@@ -34,7 +34,7 @@ const PIO: CampoPlantilla[] = [
 
 const PIO_TOMA: CampoPlantilla[] = [
   { id: 'pio_metodo', etiqueta: 'Método de la toma', grupo: G.pio, lateralidad: 'AO', tipo: 'opcion', opciones: ['Aplanación', 'Neumotonómetro', 'Rebote'], desdePreAtencion: true },
-  { id: 'pio_hora', etiqueta: 'Hora de la toma', grupo: G.pio, lateralidad: 'AO', tipo: 'texto', desdePreAtencion: true },
+  { id: 'pio_hora', etiqueta: 'Hora de la toma', grupo: G.pio, lateralidad: 'AO', tipo: 'hora', desdePreAtencion: true },
 ]
 
 const REFRACCION: CampoPlantilla[] = [
@@ -57,8 +57,10 @@ const FONDO: CampoPlantilla[] = [
 ]
 
 const GRUPOS_BASE: Record<string, GrupoPlantilla> = {
-  [G.bio]: { nombre: G.bio, sinHallazgos: true },
-  [G.fondo]: { nombre: G.fondo, sinHallazgos: true },
+  [G.bio]: { nombre: G.bio, sinHallazgos: true, copiarOdOi: true },
+  [G.fondo]: { nombre: G.fondo, sinHallazgos: true, copiarOdOi: true },
+  [G.cristalino]: { nombre: G.cristalino, copiarOdOi: true },
+  [G.tratamiento]: { nombre: G.tratamiento, copiarOdOi: true },
 }
 
 function grupos(...nombres: string[]): GrupoPlantilla[] {

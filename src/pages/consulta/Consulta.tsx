@@ -1,10 +1,12 @@
-import { CheckCircle, Circle, FloppyDisk, LockSimple } from '@phosphor-icons/react'
+import { ArrowLeft, ArrowRight, CheckCircle, Circle, FloppyDisk, LockSimple } from '@phosphor-icons/react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, NavLink, useNavigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../../components/EncabezadoPaciente'
+import { useTituloPagina } from '../../components/Layout'
 import { Aviso, Boton, Segmentado, cx } from '../../components/ui'
 import { NOMBRE_DESENLACE } from '../../lib/catalogos'
-import { bloqueosCierre, camposPendientes } from '../../lib/consulta'
+import { bloqueosCierre, camposPendientes, estadoCita } from '../../lib/consulta'
+import { paciente as buscarPaciente } from '../../lib/datos'
 import { fechaHora, hora } from '../../lib/formato'
 import { NOMBRE_TIPO, TIPOS_ATENCION } from '../../lib/plantillas'
 import { useEstado, usuarioPorId } from '../../lib/store'
@@ -24,6 +26,11 @@ const COMPONENTES: Record<Paso, (p: PropsPaso) => ReactNode> = {
   cierre: PasoCierre,
 }
 
+/** Documentos emitidos en la consulta: el paso de indicaciones es opcional, se muestra el conteo. */
+function documentosEmitidos(c: TConsulta): number {
+  return (c.recetaOptica?.emitida ? 1 : 0) + (c.recetasMedicamento.some((r) => r.emitida) ? 1 : 0) + c.ordenesExamen.filter((o) => o.emitida).length
+}
+
 function pasoCompleto(paso: Paso, c: TConsulta, plantilla: Plantilla): boolean {
   switch (paso) {
     case 'anamnesis':
@@ -33,7 +40,7 @@ function pasoCompleto(paso: Paso, c: TConsulta, plantilla: Plantilla): boolean {
     case 'diagnostico':
       return c.diagnosticos.length > 0 && !bloqueosCierre(c).some((f) => f.paso === 'diagnostico')
     case 'indicaciones':
-      return Boolean(c.recetaOptica?.emitida) || c.recetasMedicamento.some((r) => r.emitida) || c.ordenesExamen.some((o) => o.emitida)
+      return documentosEmitidos(c) > 0
     case 'cierre':
       return c.estado === 'cerrada'
   }
@@ -42,11 +49,13 @@ function pasoCompleto(paso: Paso, c: TConsulta, plantilla: Plantilla): boolean {
 /** Pantallas 3 a 7: la consulta como un flujo de cinco pasos con pestañas. */
 export function Consulta() {
   const { consultaId = '', paso = 'anamnesis' } = useParams()
-  const { datos, actualizarConsulta, registrarBloque, auditar } = useEstado()
+  const { datos, actualizarConsulta, registrarBloque, auditar, abrirConsulta } = useEstado()
   const navegar = useNavigate()
   const [guardado, setGuardado] = useState<string | null>(null)
 
   const consulta = datos.consultas[consultaId]
+  const nombrePaso = PASOS.find((p) => p.id === paso)?.nombre ?? 'Consulta'
+  useTituloPagina(consulta ? `${nombrePaso} · Ficha ${buscarPaciente(consulta.pacienteId).ficha}` : 'Consulta')
 
   useEffect(() => {
     if (consulta) auditar('Lectura de ficha clínica', `Consulta ${consulta.id}`)
@@ -81,8 +90,33 @@ export function Consulta() {
 
   const ultimoRegistro = consulta.registros.at(-1)
 
+  // Al cerrar, el siguiente paso natural del oftalmólogo es el próximo paciente listo.
+  const siguientePaciente = soloLectura
+    ? datos.citas.find((c) => c.id !== consulta.citaId && ['en_atencion', 'con_pre_atencion'].includes(estadoCita(c, datos.consultas)))
+    : undefined
+  const irASiguiente = () => {
+    if (!siguientePaciente) return
+    const id = siguientePaciente.consultaId ?? abrirConsulta(siguientePaciente.id)
+    navegar(`/consulta/${id}/${siguientePaciente.consultaId ? 'examen' : 'anamnesis'}`)
+  }
+
   return (
     <div className="mx-auto max-w-[80rem]">
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        {cita ? (
+          <Link to="/agenda" className="inline-flex min-h-8 items-center gap-1.5 rounded-md font-medium text-primary hover:underline">
+            <ArrowLeft size={16} aria-hidden="true" /> Agenda del día
+          </Link>
+        ) : (
+          <Link to={`/historial/${consulta.pacienteId}`} className="inline-flex min-h-8 items-center gap-1.5 rounded-md font-medium text-primary hover:underline">
+            <ArrowLeft size={16} aria-hidden="true" /> Historial del paciente
+          </Link>
+        )}
+        <span className="text-fg-muted">
+          {cita ? `Cita ${cita.hora} · ` : `Consulta del ${fechaHora(consulta.inicio).split(' ')[0]} · `}
+          {soloLectura ? 'cerrada' : 'en atención'}
+        </span>
+      </div>
       <EncabezadoPaciente pacienteId={consulta.pacienteId} sicId={consulta.sicId}>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-4">
           <Segmentado<TipoAtencionId>
@@ -98,16 +132,29 @@ export function Consulta() {
       </EncabezadoPaciente>
 
       {soloLectura && (
-        <Aviso tono="ok" titulo="Consulta cerrada · solo lectura" className="mb-5">
+        <Aviso
+          tono="ok"
+          titulo="Consulta cerrada · solo lectura"
+          className="mb-5"
+          accion={
+            siguientePaciente && (
+              <Boton variante="primario" pequeno onClick={irASiguiente}>
+                Siguiente: {siguientePaciente.hora} {buscarPaciente(siguientePaciente.pacienteId).nombre.split(' ')[0]}
+                <ArrowRight size={16} aria-hidden="true" />
+              </Boton>
+            )
+          }
+        >
           Cerrada el {fechaHora(consulta.cierre!)} por {autor?.nombre}. Desenlace: {consulta.desenlace ? NOMBRE_DESENLACE[consulta.desenlace] : '—'}
           {consulta.cerradaConPendientes > 0 && <> · se cerró con {consulta.cerradaConPendientes} campos obligatorios pendientes</>}.
         </Aviso>
       )}
 
-      <nav aria-label="Pasos de la consulta" className="mb-6 overflow-x-auto border-b border-line">
+      <nav aria-label="Pasos de la consulta" className="relative mb-6 overflow-x-auto border-b border-line">
         <ol className="flex min-w-max">
           {PASOS.map((p) => {
             const completo = pasoCompleto(p.id, consulta, plantilla)
+            const docs = p.id === 'indicaciones' ? documentosEmitidos(consulta) : 0
             return (
               <li key={p.id}>
                 <NavLink
@@ -119,11 +166,27 @@ export function Consulta() {
                     )
                   }
                 >
-                  {completo ? <CheckCircle size={18} weight="fill" className="text-ok" aria-hidden="true" /> : <Circle size={18} className="text-fg-muted" aria-hidden="true" />}
-                  <span>
-                    {p.numero} {p.nombre}
-                  </span>
-                  <span className="sr-only">{completo ? '(completo)' : '(pendiente)'}</span>
+                  {p.id === 'indicaciones' ? (
+                    <>
+                      <span>
+                        {p.numero} {p.nombre}
+                      </span>
+                      {docs > 0 ? (
+                        <span className="tnum rounded-full bg-primary-soft px-1.5 text-[0.8125rem] font-semibold text-primary">{docs}</span>
+                      ) : (
+                        <span className="text-[0.8125rem] font-normal text-fg-muted">opcional</span>
+                      )}
+                      <span className="sr-only">{docs ? `(${docs} documentos emitidos)` : '(sin documentos)'}</span>
+                    </>
+                  ) : (
+                    <>
+                      {completo ? <CheckCircle size={18} weight="fill" className="text-ok" aria-hidden="true" /> : <Circle size={18} className="text-fg-muted" aria-hidden="true" />}
+                      <span>
+                        {p.numero} {p.nombre}
+                      </span>
+                      <span className="sr-only">{completo ? '(completo)' : '(pendiente)'}</span>
+                    </>
+                  )}
                 </NavLink>
               </li>
             )
@@ -142,9 +205,9 @@ export function Consulta() {
           ) : guardado ? (
             <span role="status">Borrador guardado a las {guardado} · {autor?.nombre}</span>
           ) : ultimoRegistro ? (
-            <>Último registro: {ultimoRegistro.bloque.toLowerCase()} a las {hora(ultimoRegistro.fecha)} · {usuarioPorId(datos, ultimoRegistro.autorId)?.nombre}</>
+            <>Cada cambio se guarda solo. Último registro: {ultimoRegistro.bloque.toLowerCase()} a las {hora(ultimoRegistro.fecha)} · {usuarioPorId(datos, ultimoRegistro.autorId)?.nombre}</>
           ) : (
-            <>Consulta abierta a las {hora(consulta.inicio)} · {autor?.nombre}</>
+            <>Cada cambio se guarda solo. Consulta abierta a las {hora(consulta.inicio)} · {autor?.nombre}</>
           )}
         </p>
         <div className="flex flex-wrap gap-2">

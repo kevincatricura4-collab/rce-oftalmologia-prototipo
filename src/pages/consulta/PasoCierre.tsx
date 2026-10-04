@@ -49,7 +49,8 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
           <fieldset disabled={soloLectura}>
             <legend className="sr-only">Desenlace</legend>
             <div className="grid gap-2 sm:grid-cols-2">
-              {DESENLACES.map((d) => {
+              {/* En solo lectura se muestra el desenlace registrado, no las cuatro alternativas. */}
+              {DESENLACES.filter((d) => !soloLectura || d.id === consulta.desenlace).map((d) => {
                 const activo = consulta.desenlace === d.id
                 return (
                   <label
@@ -130,71 +131,81 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
         </Tarjeta>
 
         <Tarjeta id="contrarreferencia" titulo="Contrarreferencia" accion={cr.emitida ? <Insignia tono="ok" icono={CheckCircle}>Emitida {hora(cr.emitida)}</Insignia> : <Insignia>Sin emitir</Insignia>}>
-          <fieldset disabled={soloLectura} className="grid gap-4 md:grid-cols-2">
-            <legend className="sr-only">Contrarreferencia al establecimiento de origen</legend>
-            <Campo etiqueta="Establecimiento de destino" ayuda={`La SIC vino de ${ESTABLECIMIENTOS.find((e) => e.id === sic.establecimientoId)?.nombre}.`}>
-              {(p) => (
-                <Seleccion {...p} value={cr.destinoId} onChange={(e) => fijarCr({ destinoId: e.target.value })}>
-                  {ESTABLECIMIENTOS.filter((e) => e.tipo !== 'Hospital').map((e) => (
-                    <option key={e.id} value={e.id}>
-                      {e.nombre} ({e.tipo})
-                    </option>
-                  ))}
-                </Seleccion>
-              )}
-            </Campo>
-            <div>
-              <p className="text-[0.8125rem] font-medium text-fg-muted">Diagnóstico (desde el paso 3)</p>
-              {consulta.diagnosticos.length ? (
-                <ul className="mt-1 text-sm">
-                  {consulta.diagnosticos.map((d) => (
-                    <li key={d.id}>
-                      <span className="tnum font-semibold">{d.codigo}</span> {d.descripcion} {d.lateralidad && `(${d.lateralidad})`}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-1 inline-flex items-center gap-1 text-sm text-warn">
-                  <WarningCircle size={16} aria-hidden="true" /> Sin diagnóstico registrado
-                </p>
-              )}
-            </div>
-            <Campo etiqueta="Conducta" className="md:col-span-2">
-              {(p) => <AreaTexto {...p} rows={2} value={cr.conducta} onChange={(e) => fijarCr({ conducta: e.target.value })} placeholder="Tratamiento indicado y qué se espera del establecimiento de origen" />}
-            </Campo>
-            <Campo etiqueta="Control sugerido" className="md:col-span-2">
-              {(p) => <Entrada {...p} value={cr.controlSugerido} onChange={(e) => fijarCr({ controlSugerido: e.target.value })} placeholder="Ej.: control de PIO en UAPO en 3 meses" />}
-            </Campo>
-          </fieldset>
-          <div className="mt-4 flex justify-end gap-2">
-            {cr.emitida || soloLectura ? (
-              <Boton pequeno icono={Printer} disabled={!cr.emitida} onClick={() => setVista('contrarreferencia')}>
-                Ver e imprimir
-              </Boton>
-            ) : (
-              <Boton
-                pequeno
-                icono={Printer}
-                onClick={() => {
-                  fijarCr({ emitida: marcaTiempo() })
-                  registrar('Contrarreferencia')
-                  setVista('contrarreferencia')
-                }}
-              >
-                Emitir e imprimir
-              </Boton>
-            )}
-          </div>
+          {soloLectura && !cr.emitida ? (
+            <p className="text-sm text-fg-muted">No se emitió contrarreferencia en esta consulta.</p>
+          ) : (
+            <>
+              <fieldset disabled={soloLectura} className="grid gap-4 md:grid-cols-2">
+                <legend className="sr-only">Contrarreferencia al establecimiento de origen</legend>
+                <Campo etiqueta="Establecimiento de destino" ayuda={`La SIC vino de ${ESTABLECIMIENTOS.find((e) => e.id === sic.establecimientoId)?.nombre}.`}>
+                  {(p) => (
+                    <Seleccion {...p} value={cr.destinoId} onChange={(e) => fijarCr({ destinoId: e.target.value })}>
+                      {ESTABLECIMIENTOS.filter((e) => e.tipo !== 'Hospital').map((e) => (
+                        <option key={e.id} value={e.id}>
+                          {e.nombre} ({e.tipo})
+                        </option>
+                      ))}
+                    </Seleccion>
+                  )}
+                </Campo>
+                <div>
+                  <p className="text-[0.8125rem] font-medium text-fg-muted">Diagnóstico (desde el paso 3)</p>
+                  {consulta.diagnosticos.length ? (
+                    <ul className="mt-1 text-sm">
+                      {consulta.diagnosticos.map((d) => (
+                        <li key={d.id}>
+                          <span className="tnum font-semibold">{d.codigo}</span> {d.descripcion} {d.lateralidad && `(${d.lateralidad})`}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-1 inline-flex items-center gap-1 text-sm text-warn">
+                      <WarningCircle size={16} aria-hidden="true" /> Sin diagnóstico registrado
+                    </p>
+                  )}
+                </div>
+                <Campo etiqueta="Conducta" className="md:col-span-2">
+                  {(p) => <AreaTexto {...p} rows={2} value={cr.conducta} onChange={(e) => fijarCr({ conducta: e.target.value })} placeholder="Ej.: inicia latanoprost en AO; se pide control de PIO en la UAPO" />}
+                </Campo>
+                <Campo etiqueta="Control sugerido" className="md:col-span-2">
+                  {(p) => <Entrada {...p} value={cr.controlSugerido} onChange={(e) => fijarCr({ controlSugerido: e.target.value })} placeholder="Ej.: control de PIO en UAPO en 3 meses" />}
+                </Campo>
+              </fieldset>
+              <div className="mt-4 flex justify-end gap-2">
+                {cr.emitida || soloLectura ? (
+                  <Boton pequeno icono={Printer} disabled={!cr.emitida} onClick={() => setVista('contrarreferencia')}>
+                    Ver e imprimir
+                  </Boton>
+                ) : (
+                  <Boton
+                    pequeno
+                    icono={Printer}
+                    onClick={() => {
+                      fijarCr({ emitida: marcaTiempo() })
+                      registrar('Contrarreferencia')
+                      setVista('contrarreferencia')
+                    }}
+                  >
+                    Emitir e imprimir
+                  </Boton>
+                )}
+              </div>
+            </>
+          )}
         </Tarjeta>
 
         <Tarjeta id="resumen" titulo="Resumen para el paciente" accion={resumen.entregado ? <Insignia tono="ok" icono={CheckCircle}>Entregado {hora(resumen.entregado)}</Insignia> : undefined}>
-          <fieldset disabled={soloLectura}>
-            <legend className="sr-only">Resumen para el paciente</legend>
-            <Campo etiqueta="Texto en lenguaje simple" ayuda="Se genera desde la consulta y se puede editar antes de imprimir.">
-              {(p) => <AreaTexto {...p} rows={6} value={resumen.texto} onChange={(e) => fijarResumen({ texto: e.target.value })} />}
-            </Campo>
-          </fieldset>
-          <div className="mt-4 flex flex-wrap justify-end gap-2">
+          {soloLectura && !resumen.texto.trim() ? (
+            <p className="text-sm text-fg-muted">No se entregó resumen al paciente.</p>
+          ) : (
+            <fieldset disabled={soloLectura}>
+              <legend className="sr-only">Resumen para el paciente</legend>
+              <Campo etiqueta="Texto en lenguaje simple" ayuda="Se genera desde la consulta y se puede editar antes de imprimir.">
+                {(p) => <AreaTexto {...p} rows={6} value={resumen.texto} placeholder="Pulse «Generar desde la consulta» para partir de un borrador" onChange={(e) => fijarResumen({ texto: e.target.value })} />}
+              </Campo>
+            </fieldset>
+          )}
+          <div className={cx('mt-4 flex flex-wrap justify-end gap-2', soloLectura && !resumen.texto.trim() && 'hidden')}>
             {!soloLectura && (
               <Boton pequeno variante="fantasma" onClick={() => fijarResumen({ texto: resumenSugerido(consulta) })}>
                 Generar desde la consulta
@@ -255,7 +266,10 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
                   Cerrar consulta
                 </Boton>
               )}
-              <p className="mt-2 text-[0.8125rem] text-fg-muted">Al cerrar queda registrado el autor, la fecha y la hora, y la consulta pasa a solo lectura.</p>
+              <p className="mt-2 text-[0.8125rem] text-fg-muted">
+                {bloqueos.length > 0 ? 'El botón se habilita al completar lo necesario para cerrar. ' : ''}
+                Al cerrar queda registrado el autor, la fecha y la hora, y la consulta pasa a solo lectura.
+              </p>
             </>
           )}
         </section>
