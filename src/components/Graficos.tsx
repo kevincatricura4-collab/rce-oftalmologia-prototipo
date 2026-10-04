@@ -126,10 +126,11 @@ export function BarrasHorizontales({ items, formato = (v) => String(v), etiqueta
   return (
     <ul className="flex flex-col gap-2.5">
       {items.map((it, k) => (
-        <li key={k} className={cx('grid items-center gap-3', etiquetaAncha ? 'grid-cols-[minmax(0,13rem)_1fr]' : 'grid-cols-[minmax(0,9rem)_1fr]')} title={it.detalle}>
+        <li key={k} className={cx('grid items-center gap-3', etiquetaAncha ? 'grid-cols-[minmax(0,13rem)_1fr] lg:grid-cols-[minmax(0,19rem)_1fr]' : 'grid-cols-[minmax(0,11rem)_1fr]')} title={it.detalle}>
           <span className="truncate text-sm">{it.etiqueta}</span>
-          <span className="flex items-center gap-2">
-            <span className="h-5 max-w-[calc(100%-3.5rem)] rounded-r bg-primary" style={{ width: `${(it.valor / max) * 100}%`, minWidth: it.valor ? 4 : 0 }} aria-hidden="true" />
+          <span className="flex min-w-0 items-center gap-2">
+            {/* El largo es proporcional al valor dentro del espacio que deja la cifra (3,5rem), sin tope que iguale barras distintas. */}
+            <span className="h-5 shrink-0 rounded-r bg-primary" style={{ width: `calc((100% - 3.5rem) * ${it.valor / max})`, minWidth: it.valor ? 4 : 0 }} aria-hidden="true" />
             <span className="tnum text-sm font-semibold">{formato(it.valor)}</span>
           </span>
         </li>

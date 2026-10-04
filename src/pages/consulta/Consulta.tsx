@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, NavLink, useNavigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../../components/EncabezadoPaciente'
-import { IconoAvanzar, IconoCompleto, IconoGuardar, IconoSinIniciar, IconoSoloLectura, IconoVolver } from '../../components/iconos'
+import { IconoAvanzar, IconoCompleto, IconoGuardar, IconoSoloLectura, IconoVolver } from '../../components/iconos'
 import { useTituloPagina } from '../../components/Layout'
 import { Aviso, Boton, Segmentado, cx } from '../../components/ui'
 import { NOMBRE_DESENLACE } from '../../lib/catalogos'
@@ -127,7 +127,7 @@ export function Consulta() {
             onCambio={(tipo) => props.actualizar((c) => ({ ...c, tipoAtencion: tipo }))}
             opciones={TIPOS_ATENCION.map((t) => ({ valor: t, texto: NOMBRE_TIPO[t] }))}
           />
-          {!soloLectura && <p className="max-w-sm text-[0.8125rem] text-fg-muted">Al cambiar el tipo se cargan sus campos propios; lo escrito en los campos comunes se conserva.</p>}
+          {!soloLectura && <p className="max-w-sm text-[0.8125rem] text-fg-muted">Cambiar el tipo no borra lo registrado.</p>}
         </div>
       </EncabezadoPaciente>
 
@@ -151,10 +151,22 @@ export function Consulta() {
       )}
 
       <nav aria-label="Pasos de la consulta" className="relative mb-6 overflow-x-auto border-b border-line">
-        <ol className="flex min-w-max">
+        <ol className="flex max-sm:flex-wrap sm:min-w-max">
           {PASOS.map((p) => {
             const completo = pasoCompleto(p.id, consulta, plantilla)
             const docs = p.id === 'indicaciones' ? documentosEmitidos(consulta) : 0
+            const faltan = p.id === 'examen' && !completo ? camposPendientes(plantilla, consulta.hallazgos).length : 0
+            const detalle = p.id === 'indicaciones' ? (docs ? `${docs} doc.` : 'opcional') : faltan ? `faltan ${faltan}` : null
+            const lector =
+              p.id === 'indicaciones'
+                ? docs
+                  ? `(${docs} ${docs === 1 ? 'documento emitido' : 'documentos emitidos'})`
+                  : '(opcional, sin documentos)'
+                : completo
+                  ? '(completo)'
+                  : faltan
+                    ? `(pendiente: ${faltan === 1 ? 'falta 1 campo obligatorio' : `faltan ${faltan} campos obligatorios`})`
+                    : '(pendiente)'
             return (
               <li key={p.id}>
                 <NavLink
@@ -166,27 +178,17 @@ export function Consulta() {
                     )
                   }
                 >
-                  {p.id === 'indicaciones' ? (
-                    <>
-                      <span>
-                        {p.numero} {p.nombre}
-                      </span>
-                      {docs > 0 ? (
-                        <span className="tnum rounded-sm border border-line-strong px-1 text-[0.8125rem] font-semibold text-fg">{docs}</span>
-                      ) : (
-                        <span className="text-[0.8125rem] font-normal text-fg-muted">opcional</span>
-                      )}
-                      <span className="sr-only">{docs ? `(${docs} documentos emitidos)` : '(sin documentos)'}</span>
-                    </>
-                  ) : (
-                    <>
-                      {completo ? <IconoCompleto size={16} className="text-ok" aria-hidden="true" /> : <IconoSinIniciar size={16} className="text-fg-muted" aria-hidden="true" />}
-                      <span>
-                        {p.numero} {p.nombre}
-                      </span>
-                      <span className="sr-only">{completo ? '(completo)' : '(pendiente)'}</span>
-                    </>
+                  {/* Solo el paso terminado lleva ícono; el resto dice qué le falta en texto, sin el anillo de "en espera". */}
+                  {completo && p.id !== 'indicaciones' && <IconoCompleto size={16} className="shrink-0 text-ok" aria-hidden="true" />}
+                  <span>
+                    {p.numero} {p.nombre}
+                  </span>
+                  {detalle && (
+                    <span className="tnum text-[0.8125rem] font-normal text-fg-muted" aria-hidden="true">
+                      {detalle}
+                    </span>
                   )}
+                  <span className="sr-only">{lector}</span>
                 </NavLink>
               </li>
             )

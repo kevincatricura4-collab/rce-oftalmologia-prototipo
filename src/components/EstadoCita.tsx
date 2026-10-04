@@ -3,7 +3,7 @@ import { IconoCompleto, IconoConPreAtencion, IconoEnAtencion, IconoSinIniciar, t
 import { cx } from './ui'
 
 // Indicador de estado al estilo Carbon: texto en color normal y color solo en el ícono. La forma
-// avanza con el estado (anillo punteado → cuña → mitad → check relleno), así que se distingue sin
+// avanza con el estado (anillo punteado → anillo con cuña → anillo con disco → check), así que se distingue sin
 // color (MASTER, convención 5). "En atención" no va en ámbar: el ámbar es solo para datos faltantes.
 export const ESTADOS: Record<EstadoAtencion, { nombre: string; icono: Icono; colorIcono: string }> = {
   en_espera: { nombre: 'En espera', icono: IconoSinIniciar, colorIcono: 'text-fg-muted' },

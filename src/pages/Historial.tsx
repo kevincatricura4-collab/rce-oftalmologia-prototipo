@@ -91,7 +91,7 @@ export function Historial() {
 
       {soloAvPio && (
         <Aviso tono="info" titulo="Vista de pre-atención" className="mb-5">
-          Su perfil ve solo agudeza visual y PIO del historial. Diagnósticos, examen y documentos no se muestran (Ley 21.719, mínimo de datos necesario).
+          Su perfil ve solo agudeza visual y PIO del historial. Diagnósticos, examen y documentos no se muestran.
         </Aviso>
       )}
 
@@ -152,7 +152,7 @@ function EvolucionGlaucoma({ mediciones }: { mediciones: { fecha: string; pio: R
         <GraficoLinea titulo="Excavación OD (C/D)" color="text-od" puntos={serie('cd', 'OD')} min={0.3} max={0.9} formato={cd} />
         <GraficoLinea titulo="Excavación OI (C/D)" color="text-oi" puntos={serie('cd', 'OI')} min={0.3} max={0.9} formato={cd} />
       </div>
-      <p className="mt-3 text-[0.8125rem] text-fg-muted">La línea en 21 mmHg marca el límite superior de la PIO normal. Cada gráfico es un ojo: OD a la izquierda, OI a la derecha.</p>
+      <p className="mt-3 text-[0.8125rem] text-fg-muted">La línea en 21 mmHg marca el límite superior de la PIO normal.</p>
       <TablaDatos
         titulo="PIO y excavación por ojo"
         columnas={['Fecha', 'PIO OD', 'PIO OI', 'C/D OD', 'C/D OI']}

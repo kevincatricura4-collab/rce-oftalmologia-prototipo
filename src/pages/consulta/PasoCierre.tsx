@@ -60,7 +60,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
                       activo ? 'border-primary bg-primary-soft ring-1 ring-primary' : 'border-line-strong hover:bg-muted',
                     )}
                   >
-                    <input type="radio" name="desenlace" className="mt-1 size-4 accent-primary" checked={activo} onChange={() => elegirDesenlace(d.id)} />
+                    <input type="radio" name="desenlace" className="mt-1 size-4 shrink-0 accent-primary" checked={activo} onChange={() => elegirDesenlace(d.id)} />
                     <span>
                       <span className="block font-semibold">{d.nombre}</span>
                       <span className="block text-sm text-fg-muted">{d.detalle}</span>
@@ -72,7 +72,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
 
             {consulta.desenlace === 'control' && (
               <div className="mt-4 flex flex-wrap items-end gap-4">
-                <Segmentado pequeno nombre="plazo" etiqueta="Plazo del control" valor={PLAZOS.includes(consulta.plazoControl) ? consulta.plazoControl : null} onCambio={(v) => actualizar((c) => ({ ...c, plazoControl: v }))} opciones={PLAZOS.map((p) => ({ valor: p, texto: p }))} />
+                <Segmentado pequeno nombre="plazo" etiqueta="Plazo del control" disabled={soloLectura} valor={PLAZOS.includes(consulta.plazoControl) ? consulta.plazoControl : null} onCambio={(v) => actualizar((c) => ({ ...c, plazoControl: v }))} opciones={PLAZOS.map((p) => ({ valor: p, texto: p }))} />
                 <Campo etiqueta="Otro plazo" className="w-40">
                   {(p) => <Entrada {...p} value={PLAZOS.includes(consulta.plazoControl) ? '' : consulta.plazoControl} onChange={(e) => actualizar((c) => ({ ...c, plazoControl: e.target.value }))} placeholder="Ej.: 2 semanas" />}
                 </Campo>
@@ -98,6 +98,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
                 <Segmentado<Lateralidad>
                   pequeno
                   nombre="ojo-operar"
+                  disabled={soloLectura}
                   etiqueta="Ojo a operar"
                   valor={consulta.ojoOperar}
                   onCambio={(v) => actualizar((c) => ({ ...c, ojoOperar: v }))}
@@ -127,7 +128,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
               { valor: 'no', texto: 'No' },
             ]}
           />
-          <p className="mt-2 text-[0.8125rem] text-fg-muted">Necesario para cerrar. De aquí sale el denominador del indicador de recetas generadas desde el módulo.</p>
+          <p className="mt-2 text-[0.8125rem] text-fg-muted">Necesario para cerrar la consulta.</p>
         </Tarjeta>
 
         <Tarjeta id="contrarreferencia" titulo="Contrarreferencia" accion={cr.emitida ? <Insignia tono="ok" icono={IconoCompleto}>Emitida {hora(cr.emitida)}</Insignia> : <Insignia>Sin emitir</Insignia>}>
@@ -243,8 +244,15 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
           ) : (
             <>
               <ListaFaltantes titulo="Necesario para cerrar" vacio="Todo lo necesario está registrado." items={bloqueos} consultaId={consulta.id} />
-              <ListaFaltantes titulo={`Campos obligatorios de ${plantilla.nombre.toLowerCase()}`} vacio="Completos." items={pendientes} consultaId={consulta.id} maximo={6} />
-              {avisos.length > 0 && <ListaFaltantes titulo="Recomendado (indicadores)" vacio="" items={avisos} consultaId={consulta.id} />}
+              <ListaFaltantes
+                titulo={`Campos obligatorios de ${plantilla.nombre.toLowerCase()}`}
+                nota="No impiden cerrar: si faltan, se pide confirmación y la consulta queda como incompleta."
+                vacio="Completos."
+                items={pendientes}
+                consultaId={consulta.id}
+                maximo={6}
+              />
+              {avisos.length > 0 && <ListaFaltantes titulo="Recomendado" vacio="" items={avisos} consultaId={consulta.id} />}
 
               {confirmando ? (
                 <div className="mt-5 rounded-md border border-warn-line bg-warn-soft p-3" role="alertdialog" aria-labelledby="confirmar-titulo">
@@ -299,11 +307,24 @@ const NOMBRE_PASO: Record<Faltante['paso'], string> = {
   cierre: 'cierre',
 }
 
-function ListaFaltantes({ titulo, vacio, items, consultaId, maximo }: { titulo: string; vacio: string; items: Faltante[]; consultaId: string; maximo?: number }) {
+function ListaFaltantes({ titulo, nota, vacio, items, consultaId, maximo }: { titulo: string; nota?: string; vacio: string; items: Faltante[]; consultaId: string; maximo?: number }) {
   const visibles = maximo ? items.slice(0, maximo) : items
+  // Si todo lo pendiente está en el mismo paso, un solo enlace junto al título en vez de uno por fila.
+  const pasoComun = items.length > 1 && items.every((f) => f.paso === items[0].paso) ? items[0].paso : null
+  const enlace = (paso: Faltante['paso'], clase?: string) =>
+    paso !== 'cierre' && (
+      <Link to={`/consulta/${consultaId}/${paso}`} className={cx('inline-flex items-center gap-0.5 font-medium whitespace-nowrap text-primary hover:underline', clase)}>
+        ir a {NOMBRE_PASO[paso]}
+        <IconoAvanzar size={16} aria-hidden="true" />
+      </Link>
+    )
   return (
     <div className="mt-4">
-      <h3 className="text-sm font-semibold">{titulo}</h3>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-2 text-sm">
+        <h3 className="font-semibold">{titulo}</h3>
+        {pasoComun && enlace(pasoComun)}
+      </div>
+      {nota && items.length > 0 && <p className="mt-0.5 text-[0.8125rem] text-fg-muted">{nota}</p>}
       {items.length === 0 ? (
         <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-ok">
           <IconoCompleto size={16} className="shrink-0" aria-hidden="true" /> {vacio}
@@ -315,12 +336,7 @@ function ListaFaltantes({ titulo, vacio, items, consultaId, maximo }: { titulo: 
               <IconoFaltante size={16} className="mt-0.5 shrink-0 text-warn" aria-hidden="true" />
               <span className="min-w-0">
                 {f.texto}
-                {f.paso !== 'cierre' && (
-                  <Link to={`/consulta/${consultaId}/${f.paso}`} className="ml-1 inline-flex items-center gap-0.5 font-medium whitespace-nowrap text-primary hover:underline">
-                    ir a {NOMBRE_PASO[f.paso]}
-                    <IconoAvanzar size={16} aria-hidden="true" />
-                  </Link>
-                )}
+                {!pasoComun && enlace(f.paso, 'ml-1')}
               </span>
             </li>
           ))}

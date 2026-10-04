@@ -14,6 +14,7 @@ import type { Cita, EstadoAtencion } from '../lib/tipos'
 const claseAccion = 'inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors duration-150'
 const accionPrincipal = cx(claseAccion, 'bg-primary text-on-primary hover:bg-primary-hover')
 const accionSecundaria = cx(claseAccion, 'border border-line-strong bg-surface hover:bg-muted')
+const accionFantasma = cx(claseAccion, 'border border-transparent text-primary hover:bg-primary-soft')
 
 /** Mensaje que deja otra pantalla al volver a la agenda (p. ej. "Pre-atención guardada"). */
 export interface EstadoNavegacionAgenda {
@@ -41,20 +42,28 @@ export function Agenda() {
   const visibles = filtro ? filas.filter((f) => f.estado === filtro) : filas
   const esMedico = usuario.rol === 'oftalmologo'
 
-  // Lo que sigue según el rol: el oftalmólogo retoma su consulta abierta o llama al siguiente con
+  // Última actividad de una consulta abierta: su último registro o, si no tiene, la apertura.
+  const ultimaActividad = (cita: Cita) => {
+    const c = cita.consultaId ? datos.consultas[cita.consultaId] : undefined
+    return c ? (c.registros.at(-1)?.fecha ?? c.inicio) : ''
+  }
+  // "En curso" es la consulta abierta que se trabajó último, no la primera de la agenda.
+  const abiertas = filas.filter((f) => f.estado === 'en_atencion').sort((a, b) => ultimaActividad(b.cita).localeCompare(ultimaActividad(a.cita)))
+
+  // Lo que sigue según el rol: el oftalmólogo retoma su consulta en curso o llama al siguiente con
   // pre-atención; el tecnólogo, al siguiente en espera.
-  const siguiente = esMedico
-    ? (filas.find((f) => f.estado === 'en_atencion') ?? filas.find((f) => f.estado === 'con_pre_atencion'))
-    : filas.find((f) => f.estado === 'en_espera')
+  const siguiente = esMedico ? (abiertas[0] ?? filas.find((f) => f.estado === 'con_pre_atencion')) : filas.find((f) => f.estado === 'en_espera')
 
   const abrir = (cita: Cita) => {
     const id = abrirConsulta(cita.id)
     navegar(`/consulta/${id}/anamnesis`)
   }
 
-  const acciones = (cita: Cita, estado: EstadoAtencion) => {
+  // Un solo botón relleno por pantalla: el de la franja "siguiente"; en las filas las acciones van con borde.
+  const acciones = (cita: Cita, estado: EstadoAtencion, destacada = false) => {
+    const principal = destacada ? accionPrincipal : accionSecundaria
     const preAtencion = (
-      <Link to={`/pre-atencion/${cita.id}`} className={esMedico ? accionSecundaria : accionPrincipal}>
+      <Link to={`/pre-atencion/${cita.id}`} className={esMedico ? accionSecundaria : principal}>
         Registrar pre-atención
       </Link>
     )
@@ -71,20 +80,20 @@ export function Agenda() {
         return (
           <>
             {preAtencion}
-            <button type="button" onClick={() => abrir(cita)} className={accionSecundaria}>
+            <button type="button" onClick={() => abrir(cita)} className={accionFantasma}>
               Abrir sin pre-atención
             </button>
           </>
         )
       case 'con_pre_atencion':
         return (
-          <button type="button" onClick={() => abrir(cita)} className={accionPrincipal}>
+          <button type="button" onClick={() => abrir(cita)} className={principal}>
             Abrir consulta <IconoAvanzar size={16} aria-hidden="true" />
           </button>
         )
       case 'en_atencion':
         return (
-          <Link to={`/consulta/${cita.consultaId}/examen`} className={accionPrincipal}>
+          <Link to={`/consulta/${cita.consultaId}/examen`} className={principal}>
             Continuar consulta <IconoAvanzar size={16} aria-hidden="true" />
           </Link>
         )
@@ -103,7 +112,7 @@ export function Agenda() {
         titulo={`Agenda del día · ${usuario.rol === 'oftalmologo' ? usuario.ubicacion : 'Box 2'}`}
         detalle={
           <>
-            {fechaLarga(FECHA_JORNADA).replace(/^./, (l) => l.toUpperCase())} · jornada de la mañana · {filas.length} pacientes citados. La citación viene del SOME: esta agenda es de lectura.
+            {fechaLarga(FECHA_JORNADA).replace(/^./, (l) => l.toUpperCase())} · jornada de la mañana · {filas.length} pacientes citados.
           </>
         }
       />
@@ -124,13 +133,21 @@ export function Agenda() {
             <span className="text-sm font-medium text-fg-muted">{siguiente.estado === 'en_atencion' ? 'Consulta en curso' : 'Siguiente paciente'} · </span>
             <span className="tnum font-semibold">{siguiente.cita.hora}</span> <span className="font-semibold">{buscarPaciente(siguiente.cita.pacienteId).nombre}</span>
             <span className="text-fg-muted"> · {NOMBRE_TIPO[siguiente.cita.tipoSugerido].toLowerCase()} · {ESTADOS[siguiente.estado].nombre.toLowerCase()}</span>
+            {siguiente.estado === 'en_atencion' && abiertas.length > 1 && (
+              <>
+                <span className="text-fg-muted"> · </span>
+                <button type="button" onClick={() => setFiltro('en_atencion')} className="text-sm font-medium text-primary hover:underline">
+                  {abiertas.length} consultas abiertas
+                </button>
+              </>
+            )}
           </p>
-          <div className="flex flex-wrap justify-end gap-2">{acciones(siguiente.cita, siguiente.estado)}</div>
+          <div className="flex flex-wrap justify-end gap-2">{acciones(siguiente.cita, siguiente.estado, true)}</div>
         </section>
       )}
 
       {/* Filtro segmentado con el conteo por estado. El activo se marca con barra inferior, negrita y aria-pressed, no solo con color. */}
-      <div role="group" aria-label="Filtrar por estado" className="mb-2 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-5">
+      <div role="group" aria-label="Filtrar por estado" className="mb-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-5">
         {([null, ...ORDEN_ESTADOS] as (EstadoAtencion | null)[]).map((e) => {
           const activo = filtro === e
           const est = e ? ESTADOS[e] : null
@@ -147,13 +164,13 @@ export function Agenda() {
               )}
             >
               {est && <est.icono size={16} className={cx('shrink-0', est.colorIcono)} aria-hidden="true" />}
-              <span className="min-w-0">{est ? est.nombre : 'Todos'}</span>
+              <span className="min-w-0">{est ? est.nombre.replace('-', '\u2011') : 'Todos'}</span>
               <span className="tnum ml-auto pl-2 text-base font-semibold">{e ? conteo[e] : filas.length}</span>
             </button>
           )
         })}
       </div>
-      <p className="mb-3 min-h-6 text-sm text-fg-muted" aria-live="polite">
+      <p className="sr-only" aria-live="polite">
         {filtro ? `Mostrando ${conteo[filtro]} de ${filas.length}: ${ESTADOS[filtro].nombre.toLowerCase()}.` : ''}
       </p>
 
@@ -196,7 +213,11 @@ export function Agenda() {
                 <tr key={cita.id} className="border-t border-line align-top first:border-t-0 max-md:grid max-md:grid-cols-[3.5rem_1fr] max-md:py-1 md:first:border-t">
                   <td className="tnum px-3 py-3 font-semibold max-md:pb-0 sm:px-4">{cita.hora}</td>
                   <td className="px-3 py-3 max-md:pb-2">
-                    <span className="block font-semibold">{p.nombre}</span>
+                    {/* El nombre abre el historial: evita repetir un enlace "Historial" en cada fila. */}
+                    <Link to={`/historial/${p.id}`} className="block w-fit font-semibold text-primary hover:underline">
+                      {p.nombre}
+                      <span className="sr-only">, ver historial</span>
+                    </Link>
                     <span className="block text-sm text-fg-muted">
                       <span className="whitespace-nowrap">{edad(p.fechaNacimiento)} años</span> · <span className="whitespace-nowrap">Ficha {p.ficha}</span> ·{' '}
                       <span className={cx('whitespace-nowrap', p.tipoDocumento !== 'RUN' && 'font-semibold text-fg')}>{documento(p)}</span>
@@ -214,9 +235,6 @@ export function Agenda() {
                   <td className="px-3 py-3 max-md:col-start-2 max-md:pt-1 sm:px-4">
                     <div className="flex flex-col items-end gap-2 max-md:flex-row max-md:flex-wrap max-md:items-center">
                       {acciones(cita, estado)}
-                      <Link to={`/historial/${p.id}`} className="inline-flex min-h-8 items-center text-sm font-medium text-primary hover:underline">
-                        Historial<span className="sr-only"> de {p.nombre}</span>
-                      </Link>
                     </div>
                   </td>
                 </tr>

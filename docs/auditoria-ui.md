@@ -80,3 +80,29 @@ Kevin observó que los íconos "se veían hechos por IA". Un panel de tres propu
 
 Tras el cambio se repitieron axe-core (0 fallas en claro y oscuro), las 40 comprobaciones de flujo,
 el recorrido con teclado y los cuatro anchos de pantalla.
+
+## Tercera revisión: tres revisores independientes
+
+Tres revisores (anti-plantilla, clínico y de defectos visuales) juzgaron 31 capturas y cada
+hallazgo se intentó refutar contra el código antes de corregirlo. Se descartó uno (mover el grupo
+"Control" del examen) y se corrigieron estos:
+
+| Hallazgo | Corrección |
+|---|---|
+| Las barras de Reportes no respetaban los valores (883 y 548 se veían iguales) | Largo proporcional al valor; diagnósticos a ancho completo |
+| Gráficos de indicadores desalineados entre tarjetas | El gráfico va al pie de cada tarjeta |
+| Radios del desenlace de distinto tamaño | El radio no se encoge cuando el texto ocupa dos líneas |
+| A 390 px se cortaban el nombre del producto y las pestañas de pasos | Menos separación en el encabezado; las pestañas pasan a dos filas |
+| Sigla del ojo separada de su valor ("OI" / "1,0") | Cada par sigla-valor no se corta |
+| "Sin hallazgos" se confundía con un campo ya llenado | Casilla de verificación; no aparece en solo lectura |
+| "Con pre-atención" y "En atención" casi iguales | "En atención" pasa a anillo con disco |
+| La pestaña Examen se veía "sin empezar" con datos | Dice "faltan N"; Indicaciones dice "opcional" o "N doc." |
+| Agenda con seis botones rellenos, filas altas y "Consulta en curso" equivocada | Un solo botón relleno, el nombre abre el historial, la consulta en curso es la última trabajada |
+| La PIO solo se marcaba sobre 21 mmHg | En glaucoma se marca sobre la PIO objetivo de cada ojo |
+| "Campos obligatorios" no impiden cerrar, pero no se decía | Nota explícita y un solo enlace al examen |
+| Consulta cerrada con controles deshabilitados | Se muestra solo el valor registrado |
+| Textos que explicaban el diseño al usuario | Eliminados o reducidos a lo que el usuario necesita |
+| Celeste saturado en modo oscuro | `primary` oscuro pasa a `#6CB0E0` (7,1:1 con su texto) |
+
+Tras los cambios: axe-core sin fallas en claro y oscuro, 64 comprobaciones de flujo, teclado y
+cuatro anchos sin desplazamiento horizontal.

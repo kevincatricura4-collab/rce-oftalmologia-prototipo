@@ -103,7 +103,11 @@ export function PreAtencion() {
                       <tr key={f.clave} className="border-b border-line/70">
                         <th scope="row" className="px-3 py-2 text-left font-normal">
                           {f.etiqueta}
-                          {ref && <span className="block text-[0.8125rem] text-fg-muted">desde SIC: OD {ref.OD} · OI {ref.OI}</span>}
+                          {ref && (
+                            <span className="block text-[0.8125rem] text-fg-muted">
+                              desde SIC: <span className="whitespace-nowrap">OD {ref.OD}</span> · <span className="whitespace-nowrap">OI {ref.OI}</span>
+                            </span>
+                          )}
                         </th>
                         {(['OD', 'OI'] as Ojo[]).map((o) => {
                           const pioAlta = f.clave === 'pio' && (aNumero(pa.pio[o]) ?? 0) > 21
@@ -131,6 +135,7 @@ export function PreAtencion() {
             <div className="mt-5 grid gap-4 md:grid-cols-[1fr_9rem]">
               <Segmentado
                 nombre="metodo"
+                disabled={soloLectura}
                 etiqueta="Método de la tonometría"
                 valor={pa.metodoPio || null}
                 onCambio={(v) => setPa((x) => ({ ...x, metodoPio: v }))}

@@ -33,7 +33,7 @@ function SinAcceso({ rol }: { rol: Rol }) {
         <IconoSinAcceso size={20} className="shrink-0 text-fg-muted" aria-hidden="true" />
         Esta pantalla no corresponde a su perfil
       </h1>
-      <p className="mt-2 text-fg-muted">Cada rol ve solo lo que necesita para su trabajo (Ley 21.719). El intento queda en el registro de accesos.</p>
+      <p className="mt-2 text-fg-muted">El intento queda en el registro de accesos.</p>
       <Link to={inicioDeRol(rol)} className="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 font-medium text-on-primary hover:bg-primary-hover">
         Ir a mi inicio
       </Link>

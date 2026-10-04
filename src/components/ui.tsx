@@ -120,8 +120,18 @@ interface PropsSegmentado<T extends string> {
 
 /** Radios nativos con apariencia de botones: el teclado funciona como en cualquier grupo de radio. */
 export function Segmentado<T extends string>({ nombre, etiqueta, opciones, valor, onCambio, ocultarEtiqueta, disabled, pequeno }: PropsSegmentado<T>) {
+  // Solo lectura (consulta cerrada): se muestra el valor registrado, no las alternativas deshabilitadas.
+  if (disabled) {
+    const elegida = opciones.find((o) => o.valor === valor)
+    return (
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className={ocultarEtiqueta ? 'sr-only' : 'text-[0.8125rem] font-medium text-fg-muted'}>{etiqueta}</p>
+        <p className={cx('flex items-center text-[0.9375rem]', pequeno ? 'min-h-8' : 'min-h-10', elegida ? 'font-semibold' : 'text-fg-muted')}>{elegida ? elegida.texto : '—'}</p>
+      </div>
+    )
+  }
   return (
-    <fieldset className="min-w-0" disabled={disabled}>
+    <fieldset className="min-w-0">
       <legend className={ocultarEtiqueta ? 'sr-only' : 'mb-1 text-[0.8125rem] font-medium text-fg-muted'}>{etiqueta}</legend>
       <div className="flex flex-wrap gap-2">
         {opciones.map((o) => (
@@ -131,12 +141,7 @@ export function Segmentado<T extends string>({ nombre, etiqueta, opciones, valor
               'inline-flex items-center justify-center rounded-md border font-medium transition-colors duration-150',
               'has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring',
               pequeno ? 'h-8 min-w-11 px-2.5 text-sm' : 'h-10 px-4',
-              valor === o.valor
-                ? 'border-primary bg-primary-soft text-fg ring-1 ring-primary'
-                : disabled
-                  ? 'border-line bg-surface text-fg-muted'
-                  : 'border-line-strong bg-surface text-fg hover:bg-muted',
-              disabled && 'cursor-default',
+              valor === o.valor ? 'border-primary bg-primary-soft text-fg ring-1 ring-primary' : 'border-line-strong bg-surface text-fg hover:bg-muted',
             )}
           >
             <input type="radio" className="sr-only" name={nombre} value={o.valor} checked={valor === o.valor} onChange={() => onCambio(o.valor)} />

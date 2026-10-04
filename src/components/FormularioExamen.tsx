@@ -2,7 +2,7 @@ import { camposPorGrupo, vieneDePreAtencion } from '../lib/consulta'
 import { aNumero, comaDecimal, normalizarFecha, normalizarHora } from '../lib/formato'
 import { SIN_HALLAZGOS, campoVisible } from '../lib/plantillas'
 import type { CampoPlantilla, Hallazgos, Lateralidad, Ojo, Plantilla, PreAtencion } from '../lib/tipos'
-import { IconoAvanzar, IconoFueraDeRango, IconoMarcado } from './iconos'
+import { IconoAvanzar, IconoFueraDeRango } from './iconos'
 import { Segmentado, claseEntrada, cx } from './ui'
 
 // Formulario de examen dirigido por plantilla (RF-05, RF-06, RNF-07). No hay un formulario
@@ -26,6 +26,8 @@ const PIO_MAXIMA_NORMAL = 21
 
 export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectura, onCambio, onVarios }: Props) {
   const grupos = camposPorGrupo(plantilla)
+  // En glaucoma la referencia es la PIO objetivo de cada ojo, no solo el límite poblacional de 21 mmHg.
+  const usaPioObjetivo = plantilla.campos.some((c) => c.id === 'gl_pio_objetivo')
 
   return (
     <div className="rounded-lg border border-line relative bg-surface sm:overflow-x-auto">
@@ -76,24 +78,22 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                     )}
                   </span>
                 </th>
-                {grupo.sinHallazgos && deTexto.length > 0 ? (
+                {grupo.sinHallazgos && deTexto.length > 0 && !soloLectura ? (
+                  // Casilla y no botón: un botón con el texto "Sin hallazgos" se confundía con un campo ya
+                  // llenado con ese valor. En solo lectura no se muestra: los campos ya dicen lo registrado.
                   OJOS.map((ojo) => {
                     const activo = sinHallazgosEn(ojo)
                     return (
-                      <td key={ojo} className="px-2 pt-3 pb-1.5 text-center">
-                        <button
-                          type="button"
-                          disabled={soloLectura}
-                          aria-pressed={activo}
-                          onClick={() => onVarios(deTexto.map((c) => ({ campoId: c.id, lado: ojo, valor: activo ? '' : SIN_HALLAZGOS })))}
-                          className={cx(
-                            'inline-flex h-8 w-full max-w-44 items-center justify-center gap-1.5 rounded-md border px-2 text-sm font-medium transition-colors duration-150',
-                            activo ? 'border-primary bg-primary-soft text-fg' : 'border-line-strong bg-surface hover:bg-muted',
-                          )}
-                        >
-                          {activo && <IconoMarcado size={16} aria-hidden="true" />}
+                      <td key={ojo} className="px-2 pt-3 pb-1.5">
+                        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-sm font-medium">
+                          <input
+                            type="checkbox"
+                            className="size-4 shrink-0 accent-primary"
+                            checked={activo}
+                            onChange={(e) => onVarios(deTexto.map((c) => ({ campoId: c.id, lado: ojo, valor: e.target.checked ? SIN_HALLAZGOS : '' })))}
+                          />
                           Sin hallazgos <span className="sr-only">{ojo === 'OD' ? 'ojo derecho' : 'ojo izquierdo'}, {grupo.nombre}</span>
-                        </button>
+                        </label>
                       </td>
                     )
                   })
@@ -102,7 +102,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                 )}
               </tr>
               {visibles.map((campo) => (
-                <FilaCampo key={campo.id} campo={campo} hallazgos={hallazgos} preAtencion={preAtencion} soloLectura={soloLectura} onCambio={onCambio} />
+                <FilaCampo key={campo.id} campo={campo} hallazgos={hallazgos} preAtencion={preAtencion} soloLectura={soloLectura} usaPioObjetivo={usaPioObjetivo} onCambio={onCambio} />
               ))}
             </tbody>
           )
@@ -112,7 +112,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
   )
 }
 
-function FilaCampo({ campo, hallazgos, preAtencion, soloLectura, onCambio }: { campo: CampoPlantilla; hallazgos: Hallazgos; preAtencion: PreAtencion | null; soloLectura: boolean; onCambio: Props['onCambio'] }) {
+function FilaCampo({ campo, hallazgos, preAtencion, soloLectura, usaPioObjetivo, onCambio }: { campo: CampoPlantilla; hallazgos: Hallazgos; preAtencion: PreAtencion | null; soloLectura: boolean; usaPioObjetivo: boolean; onCambio: Props['onCambio'] }) {
   const valor = hallazgos[campo.id] ?? {}
   const lados: Lateralidad[] = campo.lateralidad === 'AO' ? ['AO'] : OJOS
 
@@ -139,7 +139,7 @@ function FilaCampo({ campo, hallazgos, preAtencion, soloLectura, onCambio }: { c
       ) : (
         OJOS.map((ojo) => (
           <td key={ojo} className="px-2 py-1.5 align-top">
-            <Control campo={campo} lado={ojo} valor={valor[ojo] ?? ''} soloLectura={soloLectura} onCambio={onCambio} />
+            <Control campo={campo} lado={ojo} valor={valor[ojo] ?? ''} pioObjetivo={campo.id === 'pio' && usaPioObjetivo ? hallazgos.gl_pio_objetivo?.[ojo] : undefined} soloLectura={soloLectura} onCambio={onCambio} />
           </td>
         ))
       )}
@@ -147,15 +147,17 @@ function FilaCampo({ campo, hallazgos, preAtencion, soloLectura, onCambio }: { c
   )
 }
 
-function Control({ campo, lado, valor, soloLectura, onCambio }: { campo: CampoPlantilla; lado: Lateralidad; valor: string; soloLectura: boolean; onCambio: Props['onCambio'] }) {
+function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { campo: CampoPlantilla; lado: Lateralidad; valor: string; pioObjetivo?: string; soloLectura: boolean; onCambio: Props['onCambio'] }) {
   const etiqueta = `${campo.etiqueta}${lado === 'AO' ? '' : `, ${lado === 'OD' ? 'ojo derecho (OD)' : 'ojo izquierdo (OI)'}`}`
   const cambiar = (v: string) => onCambio(campo.id, lado, v)
-  const centrado = lado !== 'AO'
+  const esNumero = campo.tipo === 'numero' || campo.tipo === 'decimal'
+  // Solo las cifras van centradas, para compararlas OD contra OI; el texto se lee mejor alineado a la izquierda.
+  const centrado = lado !== 'AO' && (esNumero || campo.tipo === 'fecha' || campo.tipo === 'hora')
 
   switch (campo.tipo) {
     case 'opcion':
       return (
-        <select aria-label={etiqueta} value={valor} disabled={soloLectura} onChange={(e) => cambiar(e.target.value)} className={cx(claseEntrada, 'h-9 pr-8', centrado && 'text-center')}>
+        <select aria-label={etiqueta} value={valor} disabled={soloLectura} onChange={(e) => cambiar(e.target.value)} className={cx(claseEntrada, 'h-9 pr-8')}>
           <option value="">—</option>
           {campo.opciones?.map((o) => (
             <option key={o}>{o}</option>
@@ -196,8 +198,11 @@ function Control({ campo, lado, valor, soloLectura, onCambio }: { campo: CampoPl
       return <Segmentado pequeno nombre={campo.id} etiqueta={etiqueta} ocultarEtiqueta disabled={soloLectura} valor={valor} onCambio={cambiar} opciones={[{ valor: 'OD', texto: 'OD' }, { valor: 'OI', texto: 'OI' }, { valor: 'AO', texto: 'AO (ambos)' }]} />
 
     default: {
-      const pioAlta = campo.id === 'pio' && (aNumero(valor) ?? 0) > PIO_MAXIMA_NORMAL
-      const esNumero = campo.tipo === 'numero' || campo.tipo === 'decimal'
+      const pio = campo.id === 'pio' ? aNumero(valor) : null
+      const objetivo = aNumero(pioObjetivo)
+      const alertaPio =
+        pio === null ? null : objetivo !== null && pio > objetivo ? `Sobre objetivo (${pioObjetivo} mmHg)` : pio > PIO_MAXIMA_NORMAL ? `Sobre ${PIO_MAXIMA_NORMAL} mmHg` : null
+      const pioAlta = alertaPio !== null
       // Fecha y hora como texto en formato chileno (dd-mm-aaaa, 24 h), sin depender del idioma del navegador.
       const normalizar = campo.tipo === 'decimal' ? comaDecimal : campo.tipo === 'fecha' ? normalizarFecha : campo.tipo === 'hora' ? normalizarHora : null
       const ayuda = campo.tipo === 'fecha' ? 'dd-mm-aaaa' : campo.tipo === 'hora' ? 'hh:mm' : campo.placeholder
@@ -222,7 +227,7 @@ function Control({ campo, lado, valor, soloLectura, onCambio }: { campo: CampoPl
           {pioAlta && (
             <p id={`${campo.id}-${lado}-rango`} className="mt-0.5 flex items-center justify-center gap-1 text-[0.8125rem] font-medium text-danger">
               <IconoFueraDeRango size={16} className="shrink-0" aria-hidden="true" />
-              Sobre {PIO_MAXIMA_NORMAL} mmHg
+              {alertaPio}
             </p>
           )}
         </>
