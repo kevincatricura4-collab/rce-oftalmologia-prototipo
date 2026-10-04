@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/*
+  Sistema de diseño — ver design-system/MASTER.md
+  Base: UI UX Pro Max · producto "Patient Portal / Health Records" (#182)
+  Estilo: Trust & Authority + Accessible & Ethical, con densidad de Data-Dense Dashboard.
+  Los colores se definen como tokens semánticos; ninguna pantalla usa hex directos.
+*/
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+  --canvas: #f0f9ff;
+  --surface: #ffffff;
+  --muted: #e8f2f8;
+  --fg: #082f49;
+  --fg-muted: #475569;
+  --line: #cfe3ef;
+  --line-strong: #6b8ca3;
+  --primary: #0369a1;
+  --primary-hover: #075985;
+  --primary-soft: #e0f2fe;
+  --on-primary: #ffffff;
+  --ok: #15803d;
+  --ok-soft: #dcfce7;
+  --warn: #92400e;
+  --warn-soft: #fef3c7;
+  --warn-line: #d97706;
+  --danger: #b91c1c;
+  --danger-soft: #fee2e2;
+  --od: #0369a1;
+  --od-soft: #e0f2fe;
+  --oi: #0f766e;
+  --oi-soft: #ccfbf1;
+  --ring: #0284c7;
+  --scrim: rgb(8 47 73 / 0.55);
+}
+
+/* Modo box oscuro: el examen con lámpara de hendidura y el fondo de ojo se hacen con la luz baja. */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #06141d;
+  --surface: #0c2130;
+  --muted: #12303f;
+  --fg: #e6f3fb;
+  --fg-muted: #a3bccc;
+  --line: #1d4155;
+  --line-strong: #5d889f;
+  --primary: #38bdf8;
+  --primary-hover: #7dd3fc;
+  --primary-soft: #0b3a52;
+  --on-primary: #04202e;
+  --ok: #4ade80;
+  --ok-soft: #0f3a23;
+  --warn: #fcd34d;
+  --warn-soft: #3b2a07;
+  --warn-line: #d97706;
+  --danger: #fca5a5;
+  --danger-soft: #4a1616;
+  --od: #7dd3fc;
+  --od-soft: #0b3a52;
+  --oi: #5eead4;
+  --oi-soft: #0c3b38;
+  --ring: #7dd3fc;
+  --scrim: rgb(0 0 0 / 0.6);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-line: var(--warn-line);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-od: var(--od);
+  --color-od-soft: var(--od-soft);
+  --color-oi: var(--oi);
+  --color-oi-soft: var(--oi-soft);
+  --color-ring: var(--ring);
+  --color-scrim: var(--scrim);
+
+  --font-sans: "Noto Sans Variable", "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Figtree Variable", "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--canvas);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+  button, [role="button"], label[for], select, summary {
+    cursor: pointer;
+  }
+  button:disabled, fieldset:disabled button, fieldset:disabled select {
+    cursor: not-allowed;
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+  /* Los valores clínicos se alinean por dígito. */
+  input, td, th, .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Impresión de documentos (receta, orden, contrarreferencia, resumen): solo sale la hoja. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .hoja-imprimible, .hoja-imprimible * {
+    visibility: visible;
+  }
+  .hoja-imprimible {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    box-shadow: none;
+    border: 0;
+    color: #000;
+    background: #fff;
+  }
+}
