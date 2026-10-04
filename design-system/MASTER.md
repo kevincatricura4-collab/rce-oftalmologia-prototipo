@@ -49,8 +49,8 @@ nunca hex ni colores de la paleta por defecto de Tailwind.
 | fg-muted | `text-fg-muted` | `#475569` | `#A3BCCC` | Texto secundario, etiquetas |
 | line | `border-line` | `#CFE3EF` | `#1D4155` | Divisores y bordes de tarjeta |
 | line-strong | `border-line-strong` | `#6B8CA3` | `#5D889F` | Borde de campos (contraste 3:1) |
-| primary | `bg-primary` `text-primary` | `#0369A1` | `#38BDF8` | Acción principal, enlaces, selección |
-| primary-hover | `bg-primary-hover` | `#075985` | `#7DD3FC` | Hover de la acción principal |
+| primary | `bg-primary` `text-primary` | `#0369A1` | `#6CB0E0` | Acción principal, enlaces, selección |
+| primary-hover | `bg-primary-hover` | `#075985` | `#9CCBE9` | Hover de la acción principal |
 | primary-soft | `bg-primary-soft` | `#E0F2FE` | `#0B3A52` | Fondo de elemento seleccionado |
 | on-primary | `text-on-primary` | `#FFFFFF` | `#04202E` | Texto sobre primary |
 | ok / ok-soft | `text-ok` `bg-ok-soft` | `#15803D` / `#DCFCE7` | `#4ADE80` / `#0F3A23` | Completo, cerrado, dentro de meta |
@@ -66,7 +66,9 @@ el botón usa `#0369A1` (5,9:1) y `#0284C7` queda solo para el anillo de foco.
 ### Modo box oscuro
 
 La lámpara de hendidura y el fondo de ojo se hacen con la luz baja, y una pantalla blanca
-encandila. El tema oscuro (`data-theme="dark"` en `<html>`) existe por eso. Toda pantalla se
+encandila. El tema oscuro (`data-theme="dark"` en `<html>`) existe por eso. En oscuro, `primary` es un azul
+desaturado (`#6CB0E0`) y no un cian saturado: con la luz baja del box un relleno muy brillante
+destella. Da 7,1:1 con `on-primary` y 7:1 como texto sobre `surface`. Toda pantalla se
 revisa en ambos temas antes de darla por terminada.
 
 ## Tipografía
@@ -107,8 +109,9 @@ revisa en ambos temas antes de darla por terminada.
    cerrar se lista en el paso de cierre.
 5. **Estado con ícono + texto.** En espera, con pre-atención, en atención, cerrado: cada uno
    con su ícono; nunca un punto de color solo. La forma avanza con el estado: anillo punteado
-   (en espera) → anillo con cuña (con pre-atención) → medio lleno (en atención) → check relleno
-   (cerrado). El texto va en color normal y el color solo en el ícono. Severidad por forma:
+   (en espera) → anillo con cuña (con pre-atención) → anillo con disco (en atención) → check
+   relleno (cerrado). La tinta crece en cada paso; no usar medio círculo para "en atención",
+   que se confunde con la cuña. El texto va en color normal y el color solo en el ícono. Severidad por forma:
    triángulo ámbar = faltante, hexágono rojo = fuera de rango, círculo tachado = error, círculo
    con i = información.
 6. **Autoría visible.** Cada bloque registrado muestra quién y a qué hora.

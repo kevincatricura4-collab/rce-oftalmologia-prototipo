@@ -193,7 +193,7 @@ function Plantillas() {
     <div className="mx-auto max-w-[72rem]">
       <TituloPantalla
         titulo="Plantillas de tipo de atención"
-        detalle="El formulario de examen se dibuja desde estas plantillas (RNF-07): un campo agregado aquí aparece de inmediato en el paso Examen, sin programar."
+        detalle="Un campo agregado aquí aparece de inmediato en el paso Examen."
       />
       <div className="mb-5">
         <Segmentado
@@ -208,7 +208,8 @@ function Plantillas() {
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <Tarjeta id="campos" titulo={`${plantilla.nombre} · ${plantilla.ficha} · ${plantilla.campos.length} campos`}>
-          <p className="mb-4 text-sm text-fg-muted">{plantilla.descripcion}</p>
+          <p className="text-sm text-fg-muted">{plantilla.descripcion}</p>
+          <p className="mt-1 mb-4 text-[0.8125rem] text-fg-muted">"Obligatorio": el campo cuenta para que la consulta quede completa. No impide cerrarla.</p>
           {camposPorGrupo(plantilla).map(({ grupo, campos }) => (
             <section key={grupo.nombre} className="mb-4 last:mb-0">
               <h3 className="mb-1.5 text-sm font-semibold">
@@ -229,7 +230,7 @@ function Plantillas() {
                     {c.personalizado && <Insignia tono="info">Agregado</Insignia>}
                     <label className="inline-flex min-h-9 items-center gap-2 text-sm">
                       <input type="checkbox" className="size-4 accent-primary" checked={Boolean(c.obligatorio)} onChange={(e) => editar(c.id, { obligatorio: e.target.checked })} />
-                      Obligatorio al cerrar
+                      Obligatorio<span className="sr-only">: {c.etiqueta}</span>
                     </label>
                     {c.personalizado && (
                       <button type="button" onClick={() => quitar(c.id)} aria-label={`Quitar campo ${c.etiqueta}`} className="grid size-9 place-items-center rounded-md text-danger hover:bg-danger-soft">
@@ -284,7 +285,7 @@ function Plantillas() {
             {(campo.tipo === 'numero' || campo.tipo === 'decimal') && <Campo etiqueta="Unidad (opcional)">{(p) => <Entrada {...p} value={campo.unidad} placeholder="Ej.: mmHg" onChange={(e) => setCampo({ ...campo, unidad: e.target.value })} />}</Campo>}
             <label className="inline-flex min-h-10 items-center gap-2">
               <input type="checkbox" className="size-4 accent-primary" checked={campo.obligatorio} onChange={(e) => setCampo({ ...campo, obligatorio: e.target.checked })} />
-              Obligatorio al cerrar la consulta
+              Obligatorio para que la consulta quede completa
             </label>
             {error && (
               <p role="alert" className="text-sm text-danger">

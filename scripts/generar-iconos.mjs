@@ -35,10 +35,11 @@ const ICONOS = {
   IconoModoOscuro: 'Asleep',
   IconoModoClaro: 'Light',
   IconoDatosPrueba: 'DataBase',
-  // Estado de la cita: el relleno crece con el avance (anillo punteado, cuña, mitad, check)
+  // Estado de la cita: la tinta crece con el avance (anillo punteado, anillo con cuña, anillo con
+  // disco, check). "En atención" no usa medio círculo: se confundía con la cuña de "con pre-atención".
   IconoSinIniciar: 'CircleDash',
   IconoConPreAtencion: 'InProgress',
-  IconoEnAtencion: 'Incomplete',
+  IconoEnAtencion: 'CircleFilled',
   IconoCompleto: 'CheckmarkFilled',
   // Severidad: la forma distingue, no solo el color
   IconoFaltante: 'WarningAltFilled',

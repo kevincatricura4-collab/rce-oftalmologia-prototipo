@@ -36,7 +36,7 @@ export function Reportes() {
     <div className="mx-auto max-w-[80rem]">
       <TituloPantalla
         titulo="Reportes de actividad e indicadores"
-        detalle="Policlínico de Oftalmología, Hospital San Lucas. Solo datos agregados: ningún reporte identifica pacientes."
+        detalle="Policlínico de Oftalmología, Hospital San Lucas."
       />
 
       <Aviso tono="faltante" titulo="Cifras simuladas con datos de prueba" className="mb-5">
@@ -59,14 +59,15 @@ export function Reportes() {
                 <p className="tnum font-display text-3xl leading-none font-bold">{pct(enMeta.pct)}</p>
                 <p className="text-sm text-fg-muted">
                   {mesAnio(`${MESES_OPERACION[ind.mesMeta]}-01`)} · meta ≥ {ind.meta}% {ind.plazo}
+                  {ind.lineaBase !== null && <span className="whitespace-nowrap"> (línea base {ind.lineaBase}%)</span>}
                 </p>
               </div>
               <p className={`mt-2 inline-flex items-center gap-1.5 text-sm font-semibold ${cumple ? 'text-ok' : 'text-warn'}`}>
                 {cumple ? <IconoCompleto size={16} className="shrink-0 text-ok" aria-hidden="true" /> : <IconoFaltante size={16} className="shrink-0 text-warn" aria-hidden="true" />}
                 {cumple ? 'Cumple la meta' : 'Bajo la meta'} · {enMeta.num} de {enMeta.den}
-                {ind.lineaBase !== null && <span className="font-normal text-fg-muted"> · línea base {ind.lineaBase}%</span>}
               </p>
-              <div className="mt-4">
+              {/* El gráfico va al pie de la tarjeta: las tres quedan alineadas aunque el texto de arriba ocupe más líneas. */}
+              <div className="mt-auto pt-4">
                 <GraficoLinea
                   titulo={<span className="sr-only">{ind.corto} por mes</span>}
                   puntos={serie.map((v, i) => ({ etiqueta: mesAnio(`${MESES_OPERACION[i]}-01`).slice(0, 3), valor: v.pct }))}
@@ -102,14 +103,14 @@ export function Reportes() {
           </Seleccion>
         </label>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         <Tarjeta id="r-tipo" titulo={`Por tipo de atención · ${delMes.length} consultas`}>
           <BarrasHorizontales items={TIPOS_ATENCION.map((t) => ({ etiqueta: NOMBRE_TIPO[t], valor: porTipo.get(t) ?? 0 }))} />
         </Tarjeta>
         <Tarjeta id="r-desenlace" titulo="Por desenlace">
           <BarrasHorizontales items={(Object.keys(NOMBRE_DESENLACE) as Desenlace[]).map((d) => ({ etiqueta: NOMBRE_DESENLACE[d], valor: porDesenlace.get(d) ?? 0 }))} />
         </Tarjeta>
-        <Tarjeta id="r-dx" titulo="Diagnósticos principales más frecuentes" className="lg:col-span-2 xl:col-span-1">
+        <Tarjeta id="r-dx" titulo="Diagnósticos principales más frecuentes" className="lg:col-span-2">
           <BarrasHorizontales
             etiquetaAncha
             items={porDx.map(([cod, n]) => ({

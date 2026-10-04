@@ -7,7 +7,7 @@ export function BarraSuperior({ children, onMenu }: { children?: ReactNode; onMe
   const oscuro = tema === 'oscuro'
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-line bg-surface px-4 sm:px-6 print:hidden">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-2 sm:gap-3 border-b border-line bg-surface px-4 sm:px-6 print:hidden">
       {onMenu && (
         <button
           type="button"
@@ -24,7 +24,7 @@ export function BarraSuperior({ children, onMenu }: { children?: ReactNode; onMe
         <span className="hidden border-l border-line pl-3 font-sans text-sm font-normal whitespace-nowrap text-fg-muted sm:inline">Hospital San Lucas</span>
       </p>
 
-      <div className="ml-auto flex items-center gap-2 sm:gap-3">
+      <div className="ml-auto flex items-center gap-1.5 sm:gap-3">
         <span className="inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-sm border border-warn-line bg-warn-soft px-2 text-[0.8125rem] font-semibold text-warn">
           <IconoDatosPrueba size={16} aria-hidden="true" />
           <span className="hidden sm:inline">Datos de prueba</span>
