@@ -38,3 +38,5 @@ React, TypeScript, Vite y Tailwind CSS. El sistema completo contempla backend en
 FastAPI y base de datos PostgreSQL, con el modelo de datos homologado a recursos HL7 FHIR.
 
 Sistema de diseño elaborado con [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (licencia MIT).
+Íconos de [IBM Carbon](https://carbondesignsystem.com/elements/icons/library/) (licencia Apache-2.0, ver
+[docs/licencias/carbon-icons-LICENSE](docs/licencias/carbon-icons-LICENSE)); la marca de cuatro E de Snellen es propia.

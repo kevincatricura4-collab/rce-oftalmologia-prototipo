@@ -1,6 +1,6 @@
-import { ArrowDown, CheckCircle, Eyeglasses, FileText, Pill, Plus, Printer, Trash } from '@phosphor-icons/react'
 import { useState, type ReactNode } from 'react'
 import { DialogoDocumento, HojaDocumento } from '../../components/Documento'
+import { IconoAgregar, IconoCompleto, IconoImprimir, IconoOrdenExamen, IconoQuitar, IconoRecetaMedicamentos, IconoRecetaOptica, IconoTraerDelExamen } from '../../components/iconos'
 import { Boton, Campo, Entrada, Insignia, Segmentado, Seleccion, Tarjeta, claseEntrada, cx } from '../../components/ui'
 import { DURACIONES, FRECUENCIAS } from '../../lib/catalogos'
 import { hora, marcaTiempo, nuevoId } from '../../lib/formato'
@@ -24,7 +24,7 @@ const recetaVacia = (): RecetaOptica => {
 
 function Emitido({ fecha }: { fecha: string | null }) {
   return fecha ? (
-    <Insignia tono="ok" icono={CheckCircle}>
+    <Insignia tono="ok" icono={IconoCompleto}>
       Emitida {hora(fecha)}
     </Insignia>
   ) : (
@@ -85,7 +85,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
       {/* Receta óptica */}
       <Tarjeta
         id="receta-optica"
-        titulo={<span className="inline-flex items-center gap-2"><Eyeglasses size={20} className="text-primary" aria-hidden="true" />Receta óptica</span>}
+        titulo={<span className="inline-flex items-center gap-2"><IconoRecetaOptica size={16} className="text-fg-muted" aria-hidden="true" />Receta óptica</span>}
         accion={ro && <Emitido fecha={ro.emitida} />}
       >
         {!ro ? (
@@ -93,10 +93,10 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
             <p className="text-sm text-fg-muted">No se emitió receta óptica.</p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              <Boton icono={ArrowDown} disabled={!hayRefraccion} onClick={desdeRefraccion}>
+              <Boton icono={IconoTraerDelExamen} disabled={!hayRefraccion} onClick={desdeRefraccion}>
                 Partir desde la refracción del examen
               </Boton>
-              <Boton icono={Plus} variante="fantasma" onClick={() => fijarOptica((r) => r)}>
+              <Boton icono={IconoAgregar} variante="fantasma" onClick={() => fijarOptica((r) => r)}>
                 Receta en blanco
               </Boton>
               {!hayRefraccion && <p className="w-full text-[0.8125rem] text-fg-muted">El examen no tiene refracción registrada.</p>}
@@ -157,7 +157,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
       {/* Medicamentos */}
       <Tarjeta
         id="receta-med"
-        titulo={<span className="inline-flex items-center gap-2"><Pill size={20} className="text-primary" aria-hidden="true" />Receta de medicamentos</span>}
+        titulo={<span className="inline-flex items-center gap-2"><IconoRecetaMedicamentos size={16} className="text-fg-muted" aria-hidden="true" />Receta de medicamentos</span>}
         accion={meds.length > 0 && <Emitido fecha={meds.every((m) => m.emitida) ? meds[0].emitida : null} />}
       >
         {meds.length === 0 && <p className="text-sm text-fg-muted">{soloLectura ? 'No se emitió receta de medicamentos.' : 'Sin fármacos indicados.'}</p>}
@@ -200,7 +200,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                 <div className="flex flex-wrap items-end justify-between gap-3 md:col-span-2 lg:col-span-4">
                   <Segmentado pequeno nombre={`ojo-${m.id}`} etiqueta="Ojo" valor={m.ojo} disabled={soloLectura} onCambio={(v) => editarMed(m.id, { ojo: v })} opciones={OPCIONES_OJO} />
                   {!soloLectura && (
-                    <Boton pequeno variante="peligro" icono={Trash} onClick={() => fijarMeds(meds.filter((x) => x.id !== m.id))}>
+                    <Boton pequeno variante="peligro" icono={IconoQuitar} onClick={() => fijarMeds(meds.filter((x) => x.id !== m.id))}>
                       Quitar
                     </Boton>
                   )}
@@ -210,7 +210,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
           ))}
         </ul>
         {!soloLectura && (
-          <Boton className="mt-3" variante="fantasma" icono={Plus} onClick={() => fijarMeds([...meds, { id: nuevoId('m'), farmaco: '', dosis: '1 gota', frecuencia: '', duracion: '', ojo: null, emitida: null }])}>
+          <Boton className="mt-3" variante="fantasma" icono={IconoAgregar} onClick={() => fijarMeds([...meds, { id: nuevoId('m'), farmaco: '', dosis: '1 gota', frecuencia: '', duracion: '', ojo: null, emitida: null }])}>
             Agregar fármaco
           </Boton>
         )}
@@ -220,7 +220,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
       </Tarjeta>
 
       {/* Órdenes de examen */}
-      <Tarjeta id="ordenes" titulo={<span className="inline-flex items-center gap-2"><FileText size={20} className="text-primary" aria-hidden="true" />Orden de examen de apoyo</span>}>
+      <Tarjeta id="ordenes" titulo={<span className="inline-flex items-center gap-2"><IconoOrdenExamen size={16} className="text-fg-muted" aria-hidden="true" />Orden de examen de apoyo</span>}>
         {ordenes.length === 0 && <p className="text-sm text-fg-muted">{soloLectura ? 'No se ordenaron exámenes.' : 'Sin exámenes ordenados.'}</p>}
         <ul className="flex flex-col gap-3">
           {ordenes.map((o) => (
@@ -268,7 +268,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
           ))}
         </ul>
         {!soloLectura && (
-          <Boton className="mt-3" variante="fantasma" icono={Plus} onClick={() => fijarOrdenes([...ordenes, { id: nuevoId('o'), examen: '', ojo: null, indicacion: '', estado: 'Emitida', referenciaResultado: '', emitida: null }])}>
+          <Boton className="mt-3" variante="fantasma" icono={IconoAgregar} onClick={() => fijarOrdenes([...ordenes, { id: nuevoId('o'), examen: '', ojo: null, indicacion: '', estado: 'Emitida', referenciaResultado: '', emitida: null }])}>
             Agregar orden de examen
           </Boton>
         )}
@@ -299,16 +299,16 @@ function AccionesDocumento({ emitida, soloLectura, onEmitir, onVer, onQuitar, de
   return (
     <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
       {!soloLectura && onQuitar && !emitida && (
-        <Boton pequeno variante="peligro" icono={Trash} onClick={onQuitar}>
+        <Boton pequeno variante="peligro" icono={IconoQuitar} onClick={onQuitar}>
           Descartar
         </Boton>
       )}
       {emitida || soloLectura ? (
-        <Boton pequeno icono={Printer} onClick={onVer} disabled={!emitida}>
+        <Boton pequeno icono={IconoImprimir} onClick={onVer} disabled={!emitida}>
           Ver e imprimir
         </Boton>
       ) : (
-        <Boton pequeno icono={Printer} onClick={onEmitir} disabled={deshabilitar}>
+        <Boton pequeno icono={IconoImprimir} onClick={onEmitir} disabled={deshabilitar}>
           Emitir e imprimir
         </Boton>
       )}

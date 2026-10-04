@@ -1,7 +1,7 @@
-import { ArrowRight, CheckCircle, ClockCounterClockwise, WarningCircle, X } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ESTADOS, EstadoCita, ORDEN_ESTADOS } from '../components/EstadoCita'
+import { IconoAvanzar, IconoCerrar, IconoCompleto, IconoFaltante } from '../components/iconos'
 import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { cx } from '../components/ui'
 import { avisoSic, estadoCita } from '../lib/consulta'
@@ -79,13 +79,13 @@ export function Agenda() {
       case 'con_pre_atencion':
         return (
           <button type="button" onClick={() => abrir(cita)} className={accionPrincipal}>
-            Abrir consulta <ArrowRight size={16} aria-hidden="true" />
+            Abrir consulta <IconoAvanzar size={16} aria-hidden="true" />
           </button>
         )
       case 'en_atencion':
         return (
           <Link to={`/consulta/${cita.consultaId}/examen`} className={accionPrincipal}>
-            Continuar consulta <ArrowRight size={16} aria-hidden="true" />
+            Continuar consulta <IconoAvanzar size={16} aria-hidden="true" />
           </Link>
         )
       case 'cerrado':
@@ -109,17 +109,17 @@ export function Agenda() {
       />
 
       {aviso && (
-        <div role="status" className="mb-5 flex items-start gap-3 rounded-lg border border-ok/50 bg-ok-soft px-4 py-3">
-          <CheckCircle size={20} weight="fill" className="mt-0.5 shrink-0 text-ok" aria-hidden="true" />
+        <div role="status" className="mb-5 flex items-start gap-3 rounded-sm border border-line border-l-[3px] border-l-ok bg-surface px-4 py-3">
+          <IconoCompleto size={20} className="mt-0.5 shrink-0 text-ok" aria-hidden="true" />
           <p className="flex-1 font-medium">{aviso}</p>
-          <button type="button" onClick={() => setAviso(null)} aria-label="Cerrar aviso" className="-my-1 grid size-8 place-items-center rounded-md hover:bg-surface">
-            <X size={16} aria-hidden="true" />
+          <button type="button" onClick={() => setAviso(null)} aria-label="Cerrar aviso" className="-my-1 grid size-8 shrink-0 place-items-center rounded-sm transition-colors duration-150 hover:bg-muted">
+            <IconoCerrar size={16} aria-hidden="true" />
           </button>
         </div>
       )}
 
       {siguiente && (
-        <section aria-label="Siguiente paciente" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-primary/40 bg-primary-soft px-4 py-3">
+        <section aria-label="Siguiente paciente" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-line border-l-[3px] border-l-primary bg-surface px-4 py-3">
           <p>
             <span className="text-sm font-medium text-fg-muted">{siguiente.estado === 'en_atencion' ? 'Consulta en curso' : 'Siguiente paciente'} · </span>
             <span className="tnum font-semibold">{siguiente.cita.hora}</span> <span className="font-semibold">{buscarPaciente(siguiente.cita.pacienteId).nombre}</span>
@@ -129,43 +129,32 @@ export function Agenda() {
         </section>
       )}
 
-      <div role="group" aria-label="Filtrar por estado" className="mb-3 grid grid-cols-2 gap-3 md:grid-cols-4">
-        {ORDEN_ESTADOS.map((e) => {
-          const { nombre, icono: Icono } = ESTADOS[e]
+      {/* Filtro segmentado con el conteo por estado. El activo se marca con barra inferior, negrita y aria-pressed, no solo con color. */}
+      <div role="group" aria-label="Filtrar por estado" className="mb-2 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-5">
+        {([null, ...ORDEN_ESTADOS] as (EstadoAtencion | null)[]).map((e) => {
           const activo = filtro === e
+          const est = e ? ESTADOS[e] : null
           return (
             <button
-              key={e}
+              key={e ?? 'todos'}
               type="button"
               aria-pressed={activo}
-              onClick={() => setFiltro(activo ? null : e)}
+              onClick={() => setFiltro(e)}
               className={cx(
-                'flex items-center gap-3 rounded-lg border bg-surface p-3 text-left transition-colors duration-150 sm:p-4',
-                activo ? 'border-primary ring-1 ring-primary' : 'border-line hover:bg-muted',
+                'flex min-h-12 items-center gap-2 border-b-[3px] px-3 py-2 text-left text-sm transition-colors duration-150 focus-visible:outline-offset-[-3px]',
+                e === null && 'col-span-2 sm:col-span-1',
+                activo ? 'border-b-primary bg-primary-soft font-semibold text-fg' : 'border-b-transparent bg-surface font-medium text-fg hover:bg-muted',
               )}
             >
-              <span className={cx('grid size-10 shrink-0 place-items-center rounded-md', ESTADOS[e].clase)} aria-hidden="true">
-                <Icono size={22} />
-              </span>
-              <span className="min-w-0">
-                <span className="tnum block font-display text-2xl leading-none font-bold">{conteo[e]}</span>
-                <span className="mt-1 block text-sm text-fg-muted">{nombre}</span>
-              </span>
+              {est && <est.icono size={16} className={cx('shrink-0', est.colorIcono)} aria-hidden="true" />}
+              <span className="min-w-0">{est ? est.nombre : 'Todos'}</span>
+              <span className="tnum ml-auto pl-2 text-base font-semibold">{e ? conteo[e] : filas.length}</span>
             </button>
           )
         })}
       </div>
-      <p className="mb-3 flex min-h-8 flex-wrap items-center gap-2 text-sm text-fg-muted" aria-live="polite">
-        {filtro ? (
-          <>
-            Mostrando {conteo[filtro]} de {filas.length}: {ESTADOS[filtro].nombre.toLowerCase()}.
-            <button type="button" onClick={() => setFiltro(null)} className="inline-flex h-8 items-center gap-1 rounded-md px-2 font-medium text-primary hover:bg-primary-soft">
-              <X size={14} aria-hidden="true" /> Ver todos
-            </button>
-          </>
-        ) : (
-          'Pulse un estado para filtrar la lista.'
-        )}
+      <p className="mb-3 min-h-6 text-sm text-fg-muted" aria-live="polite">
+        {filtro ? `Mostrando ${conteo[filtro]} de ${filas.length}: ${ESTADOS[filtro].nombre.toLowerCase()}.` : ''}
       </p>
 
       {/* Bajo 768 px cada fila se vuelve tarjeta (hora y paciente arriba, estado y acción abajo): la acción nunca queda fuera de la vista. */}
@@ -197,7 +186,7 @@ export function Agenda() {
                   <span className="block text-fg-muted">{s.sospecha ? `Sospecha: ${s.sospecha.toLowerCase()}` : 'Sin sospecha diagnóstica'}</span>
                   {aviso && (
                     <span className="mt-0.5 flex items-start gap-1 font-medium text-warn">
-                      <WarningCircle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                      <IconoFaltante size={16} className="mt-0.5 shrink-0 text-warn" aria-hidden="true" />
                       {aviso}
                     </span>
                   )}
@@ -225,8 +214,7 @@ export function Agenda() {
                   <td className="px-3 py-3 max-md:col-start-2 max-md:pt-1 sm:px-4">
                     <div className="flex flex-col items-end gap-2 max-md:flex-row max-md:flex-wrap max-md:items-center">
                       {acciones(cita, estado)}
-                      <Link to={`/historial/${p.id}`} className="inline-flex min-h-8 items-center gap-1 text-sm font-medium text-primary hover:underline">
-                        <ClockCounterClockwise size={14} aria-hidden="true" />
+                      <Link to={`/historial/${p.id}`} className="inline-flex min-h-8 items-center text-sm font-medium text-primary hover:underline">
                         Historial<span className="sr-only"> de {p.nombre}</span>
                       </Link>
                     </div>

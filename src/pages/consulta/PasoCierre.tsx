@@ -1,7 +1,7 @@
-import { ArrowRight, CheckCircle, LockSimple, Printer, WarningCircle } from '@phosphor-icons/react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DialogoDocumento, HojaDocumento } from '../../components/Documento'
+import { IconoAvanzar, IconoCompleto, IconoFaltante, IconoImprimir, IconoSoloLectura } from '../../components/iconos'
 import { Aviso, AreaTexto, Boton, Campo, Entrada, Insignia, Segmentado, Seleccion, Tarjeta, cx } from '../../components/ui'
 import { DESENLACES } from '../../lib/catalogos'
 import { avisosCierre, bloqueosCierre, camposPendientes, type Faltante } from '../../lib/consulta'
@@ -130,7 +130,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
           <p className="mt-2 text-[0.8125rem] text-fg-muted">Necesario para cerrar. De aquí sale el denominador del indicador de recetas generadas desde el módulo.</p>
         </Tarjeta>
 
-        <Tarjeta id="contrarreferencia" titulo="Contrarreferencia" accion={cr.emitida ? <Insignia tono="ok" icono={CheckCircle}>Emitida {hora(cr.emitida)}</Insignia> : <Insignia>Sin emitir</Insignia>}>
+        <Tarjeta id="contrarreferencia" titulo="Contrarreferencia" accion={cr.emitida ? <Insignia tono="ok" icono={IconoCompleto}>Emitida {hora(cr.emitida)}</Insignia> : <Insignia>Sin emitir</Insignia>}>
           {soloLectura && !cr.emitida ? (
             <p className="text-sm text-fg-muted">No se emitió contrarreferencia en esta consulta.</p>
           ) : (
@@ -160,7 +160,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
                     </ul>
                   ) : (
                     <p className="mt-1 inline-flex items-center gap-1 text-sm text-warn">
-                      <WarningCircle size={16} aria-hidden="true" /> Sin diagnóstico registrado
+                      <IconoFaltante size={16} className="shrink-0" aria-hidden="true" /> Sin diagnóstico registrado
                     </p>
                   )}
                 </div>
@@ -173,13 +173,13 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
               </fieldset>
               <div className="mt-4 flex justify-end gap-2">
                 {cr.emitida || soloLectura ? (
-                  <Boton pequeno icono={Printer} disabled={!cr.emitida} onClick={() => setVista('contrarreferencia')}>
+                  <Boton pequeno icono={IconoImprimir} disabled={!cr.emitida} onClick={() => setVista('contrarreferencia')}>
                     Ver e imprimir
                   </Boton>
                 ) : (
                   <Boton
                     pequeno
-                    icono={Printer}
+                    icono={IconoImprimir}
                     onClick={() => {
                       fijarCr({ emitida: marcaTiempo() })
                       registrar('Contrarreferencia')
@@ -194,7 +194,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
           )}
         </Tarjeta>
 
-        <Tarjeta id="resumen" titulo="Resumen para el paciente" accion={resumen.entregado ? <Insignia tono="ok" icono={CheckCircle}>Entregado {hora(resumen.entregado)}</Insignia> : undefined}>
+        <Tarjeta id="resumen" titulo="Resumen para el paciente" accion={resumen.entregado ? <Insignia tono="ok" icono={IconoCompleto}>Entregado {hora(resumen.entregado)}</Insignia> : undefined}>
           {soloLectura && !resumen.texto.trim() ? (
             <p className="text-sm text-fg-muted">No se entregó resumen al paciente.</p>
           ) : (
@@ -213,7 +213,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
             )}
             <Boton
               pequeno
-              icono={Printer}
+              icono={IconoImprimir}
               disabled={!resumen.texto.trim()}
               onClick={() => {
                 if (!soloLectura && !resumen.entregado) {
@@ -238,7 +238,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
 
           {soloLectura ? (
             <p className="mt-2 inline-flex items-center gap-2 text-sm">
-              <LockSimple size={16} aria-hidden="true" /> Consulta cerrada a las {hora(consulta.cierre!)}.
+              <IconoSoloLectura size={16} className="shrink-0" aria-hidden="true" /> Consulta cerrada a las {hora(consulta.cierre!)}.
             </p>
           ) : (
             <>
@@ -262,7 +262,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
                   </div>
                 </div>
               ) : (
-                <Boton variante="primario" icono={LockSimple} className="mt-5 w-full" disabled={bloqueos.length > 0} onClick={() => (pendientes.length ? setConfirmando(true) : cerrar())}>
+                <Boton variante="primario" icono={IconoSoloLectura} className="mt-5 w-full" disabled={bloqueos.length > 0} onClick={() => (pendientes.length ? setConfirmando(true) : cerrar())}>
                   Cerrar consulta
                 </Boton>
               )}
@@ -306,19 +306,19 @@ function ListaFaltantes({ titulo, vacio, items, consultaId, maximo }: { titulo: 
       <h3 className="text-sm font-semibold">{titulo}</h3>
       {items.length === 0 ? (
         <p className="mt-1 inline-flex items-center gap-1.5 text-sm text-ok">
-          <CheckCircle size={16} weight="fill" aria-hidden="true" /> {vacio}
+          <IconoCompleto size={16} className="shrink-0" aria-hidden="true" /> {vacio}
         </p>
       ) : (
         <ul className="mt-1 flex flex-col gap-1">
           {visibles.map((f) => (
             <li key={f.texto} className="flex items-start gap-1.5 text-sm">
-              <WarningCircle size={16} className="mt-0.5 shrink-0 text-warn" aria-hidden="true" />
+              <IconoFaltante size={16} className="mt-0.5 shrink-0 text-warn" aria-hidden="true" />
               <span className="min-w-0">
                 {f.texto}
                 {f.paso !== 'cierre' && (
                   <Link to={`/consulta/${consultaId}/${f.paso}`} className="ml-1 inline-flex items-center gap-0.5 font-medium whitespace-nowrap text-primary hover:underline">
                     ir a {NOMBRE_PASO[f.paso]}
-                    <ArrowRight size={12} aria-hidden="true" />
+                    <IconoAvanzar size={16} aria-hidden="true" />
                   </Link>
                 )}
               </span>

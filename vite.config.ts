@@ -6,6 +6,6 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss()],
-  // Un solo paquete de ~520 kB (145 kB comprimido) se sirve desde la intranet: no vale la pena dividirlo.
+  // Un solo paquete de ~440 kB (132 kB comprimido) se sirve desde la intranet: no vale la pena dividirlo.
   build: { chunkSizeWarningLimit: 600 },
 })

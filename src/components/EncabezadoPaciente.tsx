@@ -1,8 +1,8 @@
-import { LockKey, WarningCircle } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { avisoSic } from '../lib/consulta'
 import { establecimiento, paciente as buscarPaciente, sic as buscarSic } from '../lib/datos'
 import { documento, edad } from '../lib/formato'
+import { IconoFaltante, IconoRegistroAccesos } from './iconos'
 
 /**
  * Encabezado de paciente (pantallas 2 a 8): nombre, edad, ficha y documento, la SIC de origen
@@ -32,13 +32,13 @@ export function EncabezadoPaciente({ pacienteId, sicId, children }: { pacienteId
         </div>
         <div className="flex flex-col items-end gap-2">
           {aviso && (
-            <p className="inline-flex items-center gap-2 rounded-lg border border-warn-line bg-warn-soft px-3 py-2 text-sm font-semibold text-warn">
-              <WarningCircle size={18} aria-hidden="true" />
+            <p className="inline-flex items-center gap-2 rounded-sm border border-warn-line border-l-[3px] bg-warn-soft px-3 py-1.5 text-sm font-semibold text-warn">
+              <IconoFaltante size={16} className="shrink-0" aria-hidden="true" />
               {aviso}
             </p>
           )}
           <p className="inline-flex items-center gap-1.5 text-[0.8125rem] text-fg-muted" title="Ley 20.584: cada lectura de una ficha queda registrada">
-            <LockKey size={14} aria-hidden="true" />
+            <IconoRegistroAccesos size={16} aria-hidden="true" />
             Acceso registrado
           </p>
         </div>

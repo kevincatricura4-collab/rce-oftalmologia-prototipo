@@ -1,8 +1,8 @@
-import { ArrowRight, MagnifyingGlass, NotePencil } from '@phosphor-icons/react'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../components/EncabezadoPaciente'
 import { GraficoLinea, TablaDatos } from '../components/Graficos'
+import { IconoAbrirFila, IconoAvanzar, IconoBuscar, IconoEnAtencion } from '../components/iconos'
 import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { Aviso, Insignia, Tarjeta, claseEntrada, cx } from '../components/ui'
 import { NOMBRE_DESENLACE } from '../lib/catalogos'
@@ -28,7 +28,7 @@ export function ListaHistorial() {
         Buscar paciente
       </label>
       <div className="relative mt-1 mb-4">
-        <MagnifyingGlass size={18} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted" aria-hidden="true" />
+        <IconoBuscar size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted" aria-hidden="true" />
         <input id="buscar-paciente" type="search" value={q} onChange={(e) => setQ(e.target.value)} className={cx(claseEntrada, 'pl-10')} placeholder="Ej.: 000123, Saavedra" />
       </div>
       <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
@@ -41,7 +41,7 @@ export function ListaHistorial() {
                   {edad(p.fechaNacimiento)} años · Ficha {p.ficha} · {documento(p)}
                 </span>
               </span>
-              <ArrowRight size={18} className="text-fg-muted" aria-hidden="true" />
+              <IconoAbrirFila size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
             </Link>
           </li>
         ))}
@@ -181,7 +181,7 @@ function ListaConsultas({ consultas }: { consultas: Consulta[] }) {
                     </p>
                     <p className="text-sm text-fg-muted">{usuarioPorId(datos, c.autorId)?.nombre}</p>
                   </div>
-                  {c.estado === 'borrador' ? <Insignia tono="faltante" icono={NotePencil}>En atención, borrador</Insignia> : <Insignia>{c.desenlace ? NOMBRE_DESENLACE[c.desenlace] : 'Cerrada'}{c.plazoControl && c.desenlace === 'control' ? ` · ${c.plazoControl}` : ''}</Insignia>}
+                  {c.estado === 'borrador' ? <Insignia tono="info" icono={IconoEnAtencion}>En atención, borrador</Insignia> : <Insignia>{c.desenlace ? NOMBRE_DESENLACE[c.desenlace] : 'Cerrada'}{c.plazoControl && c.desenlace === 'control' ? ` · ${c.plazoControl}` : ''}</Insignia>}
                 </div>
                 <dl className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
                   <div>
@@ -195,7 +195,7 @@ function ListaConsultas({ consultas }: { consultas: Consulta[] }) {
                 </dl>
                 <Link to={`/consulta/${c.id}/${c.estado === 'borrador' ? 'examen' : 'cierre'}`} className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                   {c.estado === 'borrador' ? 'Continuar consulta' : 'Ver consulta (solo lectura)'}
-                  <ArrowRight size={14} aria-hidden="true" />
+                  <IconoAvanzar size={16} aria-hidden="true" />
                 </Link>
               </li>
             )

@@ -1,8 +1,8 @@
-import { ArrowRight, Check, WarningOctagon } from '@phosphor-icons/react'
 import { camposPorGrupo, vieneDePreAtencion } from '../lib/consulta'
 import { aNumero, comaDecimal, normalizarFecha, normalizarHora } from '../lib/formato'
 import { SIN_HALLAZGOS, campoVisible } from '../lib/plantillas'
 import type { CampoPlantilla, Hallazgos, Lateralidad, Ojo, Plantilla, PreAtencion } from '../lib/tipos'
+import { IconoAvanzar, IconoFueraDeRango, IconoMarcado } from './iconos'
 import { Segmentado, claseEntrada, cx } from './ui'
 
 // Formulario de examen dirigido por plantilla (RF-05, RF-06, RNF-07). No hay un formulario
@@ -70,7 +70,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                         className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-[0.8125rem] font-medium text-primary transition-colors duration-150 hover:bg-primary-soft"
                       >
                         Copiar OD
-                        <ArrowRight size={14} aria-hidden="true" />
+                        <IconoAvanzar size={16} aria-hidden="true" />
                         OI<span className="sr-only">, {grupo.nombre}</span>
                       </button>
                     )}
@@ -91,7 +91,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                             activo ? 'border-primary bg-primary-soft text-fg' : 'border-line-strong bg-surface hover:bg-muted',
                           )}
                         >
-                          {activo && <Check size={14} weight="bold" aria-hidden="true" />}
+                          {activo && <IconoMarcado size={16} aria-hidden="true" />}
                           Sin hallazgos <span className="sr-only">{ojo === 'OD' ? 'ojo derecho' : 'ojo izquierdo'}, {grupo.nombre}</span>
                         </button>
                       </td>
@@ -221,7 +221,7 @@ function Control({ campo, lado, valor, soloLectura, onCambio }: { campo: CampoPl
           />
           {pioAlta && (
             <p id={`${campo.id}-${lado}-rango`} className="mt-0.5 flex items-center justify-center gap-1 text-[0.8125rem] font-medium text-danger">
-              <WarningOctagon size={14} aria-hidden="true" />
+              <IconoFueraDeRango size={16} className="shrink-0" aria-hidden="true" />
               Sobre {PIO_MAXIMA_NORMAL} mmHg
             </p>
           )}

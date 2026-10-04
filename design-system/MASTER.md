@@ -13,10 +13,26 @@ y ajustado al contexto clínico. Si una pantalla necesita desviarse, se document
 | Densidad | Data-Dense Dashboard | Tablas y formularios compactos: 20 a 30 pacientes por jornada |
 | Color | Clinical blue + health green + alert red | Tokens de abajo |
 | Tipografía | Medical Clean: Figtree + Noto Sans | Figtree en títulos, Noto Sans en texto y datos |
-| Íconos | Phosphor (`@phosphor-icons/react`) | Un solo peso (regular) por nivel |
+| Íconos | IBM Carbon, copiados en `src/components/iconos.tsx` (ver abajo) | 16 px en general; 20 px en avisos, controles del marco y "Sin acceso". Contorno para navegación y acciones; relleno para estado y severidad |
 
 **Anti-patrones del skill para salud:** colores neón, animación abundante, degradados
 morado/rosa "de IA", e información transmitida solo por color.
+
+**Anti-patrones de interfaz generada** (revisión de octubre de 2026): ícono dentro de un cuadrado
+de color pastel, tarjetas de indicador con ícono y número grande, estados como pastillas de
+color, logo de ojo dentro de un cuadrado, pastillas redondeadas por todos lados. Se reemplazan
+por indicadores de estado con forma, avisos con barra izquierda y etiquetas con borde.
+
+### Íconos y marca
+
+- **IBM Carbon** (licencia Apache-2.0, `docs/licencias/carbon-icons-LICENSE`). Los dibujos se
+  copian con `scripts/generar-iconos.mjs` en vez de instalar `@carbon/icons-react`, porque ese
+  paquete envía métricas de uso a IBM al instalarse en servidores de CI y contenedores. Las
+  pantallas importan solo desde `src/components/iconos.tsx`, con nombres en español
+  (`IconoAgenda`, `IconoFaltante`…).
+- **Marca:** cuatro E de Snellen en las cuatro orientaciones (cartilla de E direccional), dibujo
+  propio en `LogoRce`, en `primary` y sin contenedor. El favicon usa una sola E, porque cuatro se
+  empastan a 16 px.
 
 ## Tokens de color
 
@@ -90,7 +106,11 @@ revisa en ambos temas antes de darla por terminada.
 4. **Obligatorio por estado.** No hay asteriscos rojos en todo el formulario. Lo exigido para
    cerrar se lista en el paso de cierre.
 5. **Estado con ícono + texto.** En espera, con pre-atención, en atención, cerrado: cada uno
-   con su ícono; nunca un punto de color solo.
+   con su ícono; nunca un punto de color solo. La forma avanza con el estado: anillo punteado
+   (en espera) → anillo con cuña (con pre-atención) → medio lleno (en atención) → check relleno
+   (cerrado). El texto va en color normal y el color solo en el ícono. Severidad por forma:
+   triángulo ámbar = faltante, hexágono rojo = fuera de rango, círculo tachado = error, círculo
+   con i = información.
 6. **Autoría visible.** Cada bloque registrado muestra quién y a qué hora.
 7. **Marca "Datos de prueba"** siempre visible en el encabezado.
 
@@ -104,8 +124,13 @@ revisa en ambos temas antes de darla por terminada.
   si la tabla es larga.
 - **Selector segmentado:** para tipo de atención y lateralidad (OD / OI / AO).
 - **Pasos de la consulta:** pestañas numeradas con marca de completo o pendiente.
-- **Aviso:** franja con ícono, título corto y qué hacer. Ámbar para faltantes, azul para
-  información, verde para confirmación.
+- **Aviso:** notificación en línea con barra izquierda de 3 px, ícono de forma propia, título
+  corto y qué hacer. Fondo de color solo en lo que pide acción (faltante en ámbar, error en
+  rojo); información (azul) y confirmación (verde) van sobre la superficie con la barra.
+- **Insignia:** etiqueta con borde; solo faltante y error llevan fondo.
+- **Menú lateral:** filas a ras; el activo se marca con barra izquierda de 3 px, fondo y negrita.
+- **Filtro por estado:** franja segmentada con divisores de 1 px; el segmento activo lleva barra
+  inferior, fondo y `aria-pressed`.
 - **Documento imprimible:** receta, orden, contrarreferencia y resumen comparten una hoja
   con membrete del hospital, datos del paciente, cuerpo, autor y fecha.
 
@@ -121,7 +146,7 @@ parallax, sin desplazamiento animado. Se respeta `prefers-reduced-motion`.
 - [ ] Todo campo con etiqueta asociada; botones de solo ícono con `aria-label`
 - [ ] Ninguna información depende solo del color
 - [ ] OD a la izquierda y OI a la derecha, con sigla
-- [ ] Sin emojis como íconos; íconos Phosphor del mismo peso
+- [ ] Sin emojis como íconos; íconos Carbon importados solo desde `components/iconos.tsx`, en 16 o 20 px
 - [ ] Sin hex ni colores fuera de los tokens
 - [ ] Funciona a 1366×768 y a 768 px de ancho sin desplazamiento horizontal
 - [ ] El rol que no corresponde no ve la pantalla ni el dato

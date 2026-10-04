@@ -1,7 +1,7 @@
-import { ArrowLeft, ArrowRight, CheckCircle, Circle, FloppyDisk, LockSimple } from '@phosphor-icons/react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, NavLink, useNavigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../../components/EncabezadoPaciente'
+import { IconoAvanzar, IconoCompleto, IconoGuardar, IconoSinIniciar, IconoSoloLectura, IconoVolver } from '../../components/iconos'
 import { useTituloPagina } from '../../components/Layout'
 import { Aviso, Boton, Segmentado, cx } from '../../components/ui'
 import { NOMBRE_DESENLACE } from '../../lib/catalogos'
@@ -105,11 +105,11 @@ export function Consulta() {
       <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
         {cita ? (
           <Link to="/agenda" className="inline-flex min-h-8 items-center gap-1.5 rounded-md font-medium text-primary hover:underline">
-            <ArrowLeft size={16} aria-hidden="true" /> Agenda del día
+            <IconoVolver size={16} aria-hidden="true" /> Agenda del día
           </Link>
         ) : (
           <Link to={`/historial/${consulta.pacienteId}`} className="inline-flex min-h-8 items-center gap-1.5 rounded-md font-medium text-primary hover:underline">
-            <ArrowLeft size={16} aria-hidden="true" /> Historial del paciente
+            <IconoVolver size={16} aria-hidden="true" /> Historial del paciente
           </Link>
         )}
         <span className="text-fg-muted">
@@ -140,7 +140,7 @@ export function Consulta() {
             siguientePaciente && (
               <Boton variante="primario" pequeno onClick={irASiguiente}>
                 Siguiente: {siguientePaciente.hora} {buscarPaciente(siguientePaciente.pacienteId).nombre.split(' ')[0]}
-                <ArrowRight size={16} aria-hidden="true" />
+                <IconoAvanzar size={16} aria-hidden="true" />
               </Boton>
             )
           }
@@ -161,7 +161,7 @@ export function Consulta() {
                   to={`/consulta/${consulta.id}/${p.id}`}
                   className={({ isActive }) =>
                     cx(
-                      '-mb-px flex h-12 items-center gap-2 border-b-[3px] px-3 text-[0.9375rem] font-medium transition-colors duration-150 sm:px-4',
+                      '-mb-px flex h-12 items-center gap-2 border-b-[3px] px-3 text-[0.9375rem] font-medium transition-colors duration-150 focus-visible:outline-offset-[-3px] sm:px-4',
                       isActive ? 'border-primary text-fg font-semibold' : 'border-transparent text-fg-muted hover:text-fg hover:bg-muted',
                     )
                   }
@@ -172,7 +172,7 @@ export function Consulta() {
                         {p.numero} {p.nombre}
                       </span>
                       {docs > 0 ? (
-                        <span className="tnum rounded-full bg-primary-soft px-1.5 text-[0.8125rem] font-semibold text-primary">{docs}</span>
+                        <span className="tnum rounded-sm border border-line-strong px-1 text-[0.8125rem] font-semibold text-fg">{docs}</span>
                       ) : (
                         <span className="text-[0.8125rem] font-normal text-fg-muted">opcional</span>
                       )}
@@ -180,7 +180,7 @@ export function Consulta() {
                     </>
                   ) : (
                     <>
-                      {completo ? <CheckCircle size={18} weight="fill" className="text-ok" aria-hidden="true" /> : <Circle size={18} className="text-fg-muted" aria-hidden="true" />}
+                      {completo ? <IconoCompleto size={16} className="text-ok" aria-hidden="true" /> : <IconoSinIniciar size={16} className="text-fg-muted" aria-hidden="true" />}
                       <span>
                         {p.numero} {p.nombre}
                       </span>
@@ -200,7 +200,7 @@ export function Consulta() {
         <p className="text-[0.8125rem] text-fg-muted">
           {soloLectura ? (
             <span className="inline-flex items-center gap-1.5">
-              <LockSimple size={14} aria-hidden="true" /> Registro inmutable: autor, fecha y hora en cada bloque.
+              <IconoSoloLectura size={16} aria-hidden="true" /> Registro inmutable: autor, fecha y hora en cada bloque.
             </span>
           ) : guardado ? (
             <span role="status">Borrador guardado a las {guardado} · {autor?.nombre}</span>
@@ -216,7 +216,7 @@ export function Consulta() {
               Volver a la agenda
             </Link>
           ) : (
-            <Boton icono={FloppyDisk} onClick={guardarBorrador}>
+            <Boton icono={IconoGuardar} onClick={guardarBorrador}>
               Guardar borrador
             </Boton>
           )}

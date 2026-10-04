@@ -1,29 +1,41 @@
-import { ArrowCounterClockwise, CalendarCheck, ChartBar, ClipboardText, ClockCounterClockwise, Folders, ListChecks, SignOut, Users, X, type Icon } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useEstado } from '../lib/store'
 import type { Rol } from '../lib/tipos'
 import { ROLES } from '../lib/usuarios'
 import { BarraSuperior } from './BarraSuperior'
+import {
+  IconoAgenda,
+  IconoCambiarPerfil,
+  IconoCatalogos,
+  IconoCerrar,
+  IconoHistorial,
+  IconoPlantillas,
+  IconoRegistroAccesos,
+  IconoReportes,
+  IconoRestablecer,
+  IconoUsuarios,
+  type Icono,
+} from './iconos'
 import { cx } from './ui'
 
 interface ItemMenu {
   ruta: string
   texto: string
-  icono: Icon
+  icono: Icono
   roles: Rol[]
   nota?: Partial<Record<Rol, string>>
 }
 
 // Menú por rol, según la matriz de acceso (especificación, sección 3).
 export const MENU: ItemMenu[] = [
-  { ruta: '/agenda', texto: 'Agenda del box', icono: CalendarCheck, roles: ['oftalmologo', 'tecnologo'] },
-  { ruta: '/historial', texto: 'Historial de pacientes', icono: ClockCounterClockwise, roles: ['oftalmologo', 'tecnologo'], nota: { tecnologo: 'Solo AV y PIO' } },
-  { ruta: '/reportes', texto: 'Reportes', icono: ChartBar, roles: ['oftalmologo', 'jefatura'] },
-  { ruta: '/admin/usuarios', texto: 'Usuarios y roles', icono: Users, roles: ['administrador'] },
-  { ruta: '/admin/plantillas', texto: 'Plantillas de atención', icono: ClipboardText, roles: ['administrador'] },
-  { ruta: '/admin/catalogos', texto: 'Catálogos', icono: Folders, roles: ['administrador'] },
-  { ruta: '/admin/auditoria', texto: 'Registro de accesos', icono: ListChecks, roles: ['administrador'] },
+  { ruta: '/agenda', texto: 'Agenda del box', icono: IconoAgenda, roles: ['oftalmologo', 'tecnologo'] },
+  { ruta: '/historial', texto: 'Historial de pacientes', icono: IconoHistorial, roles: ['oftalmologo', 'tecnologo'], nota: { tecnologo: 'Solo AV y PIO' } },
+  { ruta: '/reportes', texto: 'Reportes', icono: IconoReportes, roles: ['oftalmologo', 'jefatura'] },
+  { ruta: '/admin/usuarios', texto: 'Usuarios y roles', icono: IconoUsuarios, roles: ['administrador'] },
+  { ruta: '/admin/plantillas', texto: 'Plantillas de atención', icono: IconoPlantillas, roles: ['administrador'] },
+  { ruta: '/admin/catalogos', texto: 'Catálogos', icono: IconoCatalogos, roles: ['administrador'] },
+  { ruta: '/admin/auditoria', texto: 'Registro de accesos', icono: IconoRegistroAccesos, roles: ['administrador'] },
 ]
 
 export function inicioDeRol(rol: Rol): string {
@@ -38,8 +50,8 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
 
   return (
     <div className="flex h-full flex-col">
-      <nav aria-label="Menú principal" className="flex-1 overflow-y-auto p-3">
-        <ul className="flex flex-col gap-1">
+      <nav aria-label="Menú principal" className="flex-1 overflow-y-auto py-2">
+        <ul className="flex flex-col">
           {items.map((item) => (
             <li key={item.ruta}>
               <NavLink
@@ -47,14 +59,15 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
                 onClick={alNavegar}
                 className={({ isActive }) =>
                   cx(
-                    'flex min-h-10 items-center gap-3 rounded-md px-3 py-2 text-[0.9375rem] font-medium transition-colors duration-150',
-                    isActive ? 'bg-primary-soft text-fg ring-1 ring-primary/40' : 'text-fg hover:bg-muted',
+                    // Menú lateral al estilo Carbon: filas a ras y barra izquierda en el activo (no solo color).
+                    'flex min-h-10 items-center gap-3 border-l-[3px] px-4 py-2 text-[0.9375rem] transition-colors duration-150 focus-visible:outline-offset-[-3px]',
+                    isActive ? 'border-primary bg-muted font-semibold text-fg' : 'border-transparent font-medium text-fg hover:bg-muted',
                   )
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <item.icono size={20} className={isActive ? 'text-primary' : 'text-fg-muted'} aria-hidden="true" />
+                    <item.icono size={16} className={cx('shrink-0', isActive ? 'text-primary' : 'text-fg-muted')} aria-hidden="true" />
                     <span className="min-w-0">
                       {item.texto}
                       {item.nota?.[usuario.rol] && <span className="block text-[0.8125rem] font-normal text-fg-muted">{item.nota[usuario.rol]}</span>}
@@ -77,9 +90,9 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
               salir()
               navegar('/')
             }}
-            className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors duration-150 hover:bg-muted"
+            className="flex min-h-10 items-center gap-3 rounded-sm px-3 py-2 text-left text-sm font-medium transition-colors duration-150 hover:bg-muted"
           >
-            <SignOut size={18} className="text-fg-muted" aria-hidden="true" />
+            <IconoCambiarPerfil size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
             Cambiar de perfil
           </button>
           <button
@@ -87,9 +100,9 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
             onClick={() => {
               if (confirm('¿Volver a los datos de prueba originales? Se pierde lo registrado en este recorrido.')) restablecer()
             }}
-            className="flex h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition-colors duration-150 hover:bg-muted"
+            className="flex min-h-10 items-center gap-3 rounded-sm px-3 py-2 text-left text-sm font-medium transition-colors duration-150 hover:bg-muted"
           >
-            <ArrowCounterClockwise size={18} className="text-fg-muted" aria-hidden="true" />
+            <IconoRestablecer size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
             Restablecer datos de prueba
           </button>
         </div>
@@ -169,7 +182,7 @@ export function Layout() {
               <div className="flex h-14 items-center justify-between border-b border-line px-4">
                 <span className="font-display font-semibold">Menú</span>
                 <button ref={cerrarMenu} type="button" onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid size-10 place-items-center rounded-md hover:bg-muted">
-                  <X size={20} aria-hidden="true" />
+                  <IconoCerrar size={20} aria-hidden="true" />
                 </button>
               </div>
               <div className="min-h-0 flex-1">

@@ -18,7 +18,9 @@ prueba y sin backend.
 ## Stack y comandos
 
 React 19 + TypeScript + Vite + Tailwind CSS v4. Enrutado con `react-router-dom` (HashRouter).
-Íconos Phosphor. Fuentes Figtree y Noto Sans empaquetadas con Fontsource.
+Íconos IBM Carbon copiados en `src/components/iconos.tsx` (generado por `scripts/generar-iconos.mjs`;
+no instalar `@carbon/icons-react`, que envía métricas a IBM). Fuentes Figtree y Noto Sans
+empaquetadas con Fontsource.
 
 ```bash
 npm install

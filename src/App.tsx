@@ -1,6 +1,6 @@
-import { Prohibit } from '@phosphor-icons/react'
 import { useEffect, type ReactNode } from 'react'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { IconoSinAcceso } from './components/iconos'
 import { Layout, inicioDeRol, useTituloPagina } from './components/Layout'
 import { useEstado } from './lib/store'
 import type { Rol } from './lib/tipos'
@@ -26,10 +26,13 @@ function SinAcceso({ rol }: { rol: Rol }) {
   useTituloPagina('Sin acceso')
   useEffect(() => auditar('Acceso denegado por rol', pathname), [auditar, pathname])
 
+  // Mensaje de sistema en gris, no en danger: un acceso denegado por rol no es un error.
   return (
-    <div className="mx-auto max-w-xl rounded-lg border border-line bg-surface p-6 text-center">
-      <Prohibit size={32} className="mx-auto text-fg-muted" aria-hidden="true" />
-      <h1 className="mt-3 text-xl font-bold">Esta pantalla no corresponde a su perfil</h1>
+    <div className="mx-auto max-w-xl rounded-lg border border-line border-l-[3px] border-l-line-strong bg-surface p-5">
+      <h1 className="flex items-center gap-2 text-xl font-bold">
+        <IconoSinAcceso size={20} className="shrink-0 text-fg-muted" aria-hidden="true" />
+        Esta pantalla no corresponde a su perfil
+      </h1>
       <p className="mt-2 text-fg-muted">Cada rol ve solo lo que necesita para su trabajo (Ley 21.719). El intento queda en el registro de accesos.</p>
       <Link to={inicioDeRol(rol)} className="mt-4 inline-flex h-10 items-center rounded-md bg-primary px-4 font-medium text-on-primary hover:bg-primary-hover">
         Ir a mi inicio

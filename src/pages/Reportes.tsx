@@ -1,6 +1,6 @@
-import { CheckCircle, TestTube, WarningCircle } from '@phosphor-icons/react'
 import { useMemo, useState } from 'react'
 import { BarrasHorizontales, GraficoLinea, TablaDatos } from '../components/Graficos'
+import { IconoCompleto, IconoDatosPrueba, IconoFaltante } from '../components/iconos'
 import { TituloPantalla, useTituloPagina } from '../components/Layout'
 import { Aviso, Seleccion, Tarjeta } from '../components/ui'
 import { CIE10, NOMBRE_DESENLACE } from '../lib/catalogos'
@@ -62,7 +62,7 @@ export function Reportes() {
                 </p>
               </div>
               <p className={`mt-2 inline-flex items-center gap-1.5 text-sm font-semibold ${cumple ? 'text-ok' : 'text-warn'}`}>
-                {cumple ? <CheckCircle size={18} weight="fill" aria-hidden="true" /> : <WarningCircle size={18} weight="fill" aria-hidden="true" />}
+                {cumple ? <IconoCompleto size={16} className="shrink-0 text-ok" aria-hidden="true" /> : <IconoFaltante size={16} className="shrink-0 text-warn" aria-hidden="true" />}
                 {cumple ? 'Cumple la meta' : 'Bajo la meta'} · {enMeta.num} de {enMeta.den}
                 {ind.lineaBase !== null && <span className="font-normal text-fg-muted"> · línea base {ind.lineaBase}%</span>}
               </p>
@@ -127,7 +127,7 @@ export function Reportes() {
 
       <Tarjeta id="r-hoy" titulo="Jornada de hoy en el módulo" className="mt-6">
         <p className="inline-flex items-center gap-2 text-sm">
-          <TestTube size={16} className="text-warn" aria-hidden="true" />
+          <IconoDatosPrueba size={16} className="shrink-0 text-warn" aria-hidden="true" />
           {hoy.length} consultas cerradas hoy en este recorrido de prueba ·{' '}
           {hoy.filter((c) => c.cerradaConPendientes === 0).length} con todos los campos obligatorios · {hoy.filter((c) => c.desenlace === 'alta' && c.contrarreferencia?.emitida).length} de{' '}
           {hoy.filter((c) => c.desenlace === 'alta').length} altas con contrarreferencia.
