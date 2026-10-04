@@ -136,20 +136,48 @@
   }
 }
 
-/* Impresión de documentos (receta, orden, contrarreferencia, resumen): solo sale la hoja. */
+/* Impresión de documentos (receta, orden, contrarreferencia, resumen): solo sale la hoja,
+   siempre en tinta negra sobre papel blanco aunque la pantalla esté en modo oscuro. */
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    margin: 14mm;
   }
-  .hoja-imprimible, .hoja-imprimible * {
-    visibility: visible;
+  html,
+  body {
+    background: #fff !important;
+  }
+  body:has(> dialog[open]) > #root {
+    display: none;
+  }
+  dialog[open] {
+    position: static;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+    background: #fff;
+    overflow: visible;
+  }
+  dialog[open] * {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  dialog::backdrop {
+    background: transparent;
   }
   .hoja-imprimible {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    box-shadow: none;
+    --surface: #fff;
+    --fg: #000;
+    --fg-muted: #333;
+    --line: #999;
+    --warn: #000;
+    --warn-line: #000;
+    max-width: none;
     border: 0;
+    padding: 0;
     color: #000;
     background: #fff;
   }
