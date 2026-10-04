@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { BarraSuperior } from '../components/BarraSuperior'
 import { useEstado } from '../lib/store'
 import type { Rol } from '../lib/tipos'
-import { ROLES, USUARIOS } from '../lib/usuarios'
+import { ROLES } from '../lib/usuarios'
+import { inicioDeRol } from '../components/Layout'
 
 const ICONO_ROL: Record<Rol, Icon> = {
   oftalmologo: Stethoscope,
@@ -13,7 +14,11 @@ const ICONO_ROL: Record<Rol, Icon> = {
 }
 
 export function Ingreso() {
-  const { ingresar } = useEstado()
+  const { ingresar, datos } = useEstado()
+  // Un usuario de prueba por rol (el primero activo), para recorrer el módulo desde cada perfil.
+  const perfiles = (['oftalmologo', 'tecnologo', 'jefatura', 'administrador'] as Rol[])
+    .map((rol) => datos.usuarios.find((u) => u.rol === rol && u.activo))
+    .filter((u) => u !== undefined)
   const navegar = useNavigate()
 
   return (
@@ -27,7 +32,7 @@ export function Ingreso() {
         </p>
 
         <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-          {USUARIOS.map((usuario) => {
+          {perfiles.map((usuario) => {
             const Icono = ICONO_ROL[usuario.rol]
             const rol = ROLES[usuario.rol]
             return (
@@ -36,7 +41,7 @@ export function Ingreso() {
                   type="button"
                   onClick={() => {
                     ingresar(usuario)
-                    navegar('/inicio')
+                    navegar(inicioDeRol(usuario.rol))
                   }}
                   className="group flex h-full w-full flex-col rounded-lg border border-line bg-surface p-5 text-left transition-colors duration-150 hover:border-primary hover:bg-primary-soft"
                 >

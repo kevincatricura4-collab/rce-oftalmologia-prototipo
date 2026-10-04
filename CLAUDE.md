@@ -83,21 +83,39 @@ Antes de dar una pantalla por terminada, pasar la lista de control del MASTER.
 
 ## Estado
 
-Hecho: andamiaje del proyecto, tokens y tema claro/oscuro, pantalla de ingreso por rol con
-usuarios de prueba, especificación y sistema de diseño.
+Hecho: las diez pantallas del informe, navegables por rol, con datos de prueba; tema claro y
+oscuro revisados; documentos imprimibles; workflow de GitHub Pages (`.github/workflows/pages.yml`).
+Kevin debe activar Pages en Settings → Pages → Source: GitHub Actions para que publique al unir a `main`.
 
-Pendiente, en este orden:
+Mapa del código:
 
-1. `lib/`: tipos completos, plantillas de tipo de atención, datos de prueba (agenda de unos
-   diez pacientes según sección 11 de la especificación) y estado de las consultas.
-2. Layout con barra lateral por rol y encabezado; componentes base.
-3. Pantalla 4 — examen por ojo, tipo glaucoma (la central del informe). Luego catarata y
-   consulta general sobre la misma plantilla.
-4. Pantalla 1 — agenda. Pantalla 2 — pre-atención.
-5. Pantallas 3, 5, 6 y 7 — resto del flujo de consulta, con documentos imprimibles.
-6. Pantalla 8 — historial. Pantalla 9 — reportes. Pantalla 10 — administración.
-7. Publicación en GitHub Pages: workflow que compile y despliegue `dist/` al unir a `main`.
-   Kevin debe activar Pages en Settings → Pages → Source: GitHub Actions.
+- `lib/plantillas.ts`: plantillas de consulta general, catarata y glaucoma como datos. El
+  formulario de examen (`components/FormularioExamen.tsx`) se dibuja desde aquí, y
+  Administración → Plantillas agrega campos en caliente.
+- `lib/datos.ts`: agenda de diez pacientes del Box 2 (jornada fija `FECHA_JORNADA` en
+  `lib/formato.ts`), SIC, controles previos. `lib/store.tsx` guarda el recorrido en
+  `localStorage` y se restablece desde la barra lateral.
+- `lib/consulta.ts`: reglas de la consulta (estado de la cita, precarga desde pre-atención,
+  lo que bloquea el cierre, campos pendientes, SIC incompleta, controles previos).
+- `lib/reportes.ts`: simulación con semilla fija de seis meses para los tres indicadores.
+- `pages/consulta/`: los cinco pasos de la consulta (pantallas 3 a 7).
+
+Decisiones tomadas al construir (confirmar con Kevin):
+
+- **Cierre en dos niveles.** Bloquea el cierre lo mínimo para que la consulta tenga sentido:
+  motivo, diagnóstico principal con lateralidad, desenlace (y plazo / ojo a operar) e
+  indicación de tratamiento. Los campos obligatorios del tipo de atención no bloquean: si
+  faltan, se pide confirmación y la consulta queda marcada como incompleta. Si bloquearan,
+  el indicador 1 (≥ 70 % completas) sería siempre 100 % y no mediría nada.
+- La pre-atención exige al menos un valor para pasar a "Con pre-atención". Una vez abierta la
+  consulta queda en solo lectura: el oftalmólogo corrige en el examen y el valor pierde la
+  marca "desde pre-atención".
+- Gráficos sin librería (`components/Graficos.tsx`): una serie por gráfico (OD y OI en
+  gráficos separados), porque los tonos `od`/`oi` no se distinguen bien entre sí como par de
+  series (validado con el skill dataviz).
+- Los RUN de prueba están sobre 90 millones (rango no asignado).
+
+Pendiente: revisión de Kevin y de un oftalmólogo; pruebas de usabilidad con el flujo real.
 
 ## Git
 
