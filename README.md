@@ -1,6 +1,5 @@
 # rce-oftalmologia-prototipo
 
-Proyecto de Título, Informática Biomédica, Duoc UC.
 
 Prototipo de alta fidelidad del **módulo de consulta médica oftalmológica** de un Registro
 Clínico Electrónico para un hospital de la red pública de salud. Estructura el examen por ojo
