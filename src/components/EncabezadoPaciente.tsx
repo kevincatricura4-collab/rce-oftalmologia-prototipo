@@ -14,7 +14,7 @@ export function EncabezadoPaciente({ pacienteId, sicId, children }: { pacienteId
   const aviso = s ? avisoSic(s) : null
 
   return (
-    <section aria-label="Paciente" className="mb-5 rounded-lg border border-line bg-surface px-4 py-4 sm:px-5">
+    <section aria-label="Paciente" className="rce-patient-card mb-5 rounded-lg border border-line bg-surface px-4 py-4 sm:px-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-xl font-bold sm:text-[1.375rem]">

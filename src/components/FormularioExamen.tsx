@@ -1,3 +1,6 @@
+import { Checkbox } from '@blueprintjs/core'
+import { Entrada, Seleccion } from './ui'
+import { HTMLTable, Button } from '@blueprintjs/core'
 import { useState } from 'react'
 import { camposPorGrupo, vieneDePreAtencion } from '../lib/consulta'
 import { aNumero, comaDecimal, normalizarFecha, normalizarHora } from '../lib/formato'
@@ -33,7 +36,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
 
   return (
     <div className="rounded-lg border border-line relative bg-surface sm:overflow-x-auto">
-      <table className="w-full border-collapse text-left max-sm:block sm:min-w-[34rem]">
+      <HTMLTable className="w-full border-collapse text-left max-sm:block sm:min-w-[34rem]">
         <caption className="sr-only">Examen por ojo, {plantilla.nombre}. Columnas: campo, ojo derecho (OD), ojo izquierdo (OI).</caption>
         <colgroup>
           <col />
@@ -76,15 +79,15 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                     {principal ? (
                       <span className="font-display text-[0.9375rem] font-semibold">{grupo.nombre}</span>
                     ) : (
-                      <button type="button" aria-expanded={abierto} aria-controls={`grupo-${plantilla.id}-${grupo.nombre.replaceAll(' ', '-')}`} className="min-h-10 text-left font-semibold text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [grupo.nombre]: !abierto }))}>
+                      <Button variant="minimal" type="button" aria-expanded={abierto} aria-controls={`grupo-${plantilla.id}-${grupo.nombre.replaceAll(' ', '-')}`} className="min-h-10 text-left font-semibold text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [grupo.nombre]: !abierto }))}>
                         {abierto ? 'Ocultar' : 'Mostrar'} {grupo.nombre.toLowerCase()} · adicional{tieneDatos ? ' · con datos' : ''}
-                      </button>
+                      </Button>
                     )}
-                    {adicionales.length > 0 && <button type="button" aria-label={`${mostrarAdicionales ? 'Ocultar' : 'Mostrar'} adicionales de ${grupo.nombre}`} aria-expanded={mostrarAdicionales} className="min-h-8 text-left text-[0.8125rem] font-medium text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [`${grupo.nombre}-adicionales`]: !mostrarAdicionales }))}>
+                    {adicionales.length > 0 && <Button variant="minimal" type="button" aria-label={`${mostrarAdicionales ? 'Ocultar' : 'Mostrar'} adicionales de ${grupo.nombre}`} aria-expanded={mostrarAdicionales} className="min-h-8 text-left text-[0.8125rem] font-medium text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [`${grupo.nombre}-adicionales`]: !mostrarAdicionales }))}>
                       {mostrarAdicionales ? 'Ocultar adicionales' : `Mostrar adicionales (${adicionales.length})`}
-                    </button>}
+                    </Button>}
                     {abierto && !soloLectura && copiables.length > 0 && (
-                      <button
+                      <Button variant="minimal"
                         type="button"
                         onClick={() => onVarios(copiables.map((c) => ({ campoId: c.id, lado: 'OI', valor: hallazgos[c.id]!.OD! })))}
                         className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-[0.8125rem] font-medium text-primary transition-colors duration-150 hover:bg-primary-soft"
@@ -92,7 +95,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                         Copiar OD
                         <IconoAvanzar size={16} aria-hidden="true" />
                         OI<span className="sr-only">, {grupo.nombre}</span>
-                      </button>
+                      </Button>
                     )}
                   </span>
                 </th>
@@ -103,15 +106,10 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                     const activo = sinHallazgosEn(ojo)
                     return (
                       <td key={ojo} className="px-2 pt-3 pb-1.5">
-                        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-sm font-medium">
-                          <input
-                            type="checkbox"
-                            className="size-4 shrink-0 accent-primary"
+                        <Checkbox  className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-sm font-medium"
+
                             checked={activo}
-                            onChange={(e) => onVarios(deTexto.map((c) => ({ campoId: c.id, lado: ojo, valor: e.target.checked ? SIN_HALLAZGOS : '' })))}
-                          />
-                          Sin hallazgos <span className="sr-only">{ojo === 'OD' ? 'ojo derecho' : 'ojo izquierdo'}, {grupo.nombre}</span>
-                        </label>
+                            onChange={(e) => onVarios(deTexto.map((c) => ({ campoId: c.id, lado: ojo, valor: e.target.checked ? SIN_HALLAZGOS : '' })))} labelElement={<>Sin hallazgos <span className="sr-only">{ojo === 'OD' ? 'ojo derecho' : 'ojo izquierdo'}, {grupo.nombre}</span></>} />
                       </td>
                     )
                   })
@@ -125,7 +123,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
             </tbody>
           )
         })}
-      </table>
+      </HTMLTable>
     </div>
   )
 }
@@ -176,12 +174,12 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
   switch (campo.tipo) {
     case 'opcion':
       return (
-        <select aria-label={etiqueta} value={valor} disabled={soloLectura} onChange={(e) => cambiar(e.target.value)} className={cx(claseEntrada, 'h-9 pr-8')}>
+        <Seleccion aria-label={etiqueta} value={valor} disabled={soloLectura} onChange={(e) => cambiar(e.target.value)} className={cx(claseEntrada, 'h-9 pr-8')}>
           <option value="">—</option>
           {campo.opciones?.map((o) => (
             <option key={o}>{o}</option>
           ))}
-        </select>
+        </Seleccion>
       )
 
     case 'opciones': {
@@ -190,10 +188,8 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
         <fieldset disabled={soloLectura} className="flex flex-wrap gap-x-4 gap-y-1 py-1">
           <legend className="sr-only">{etiqueta}</legend>
           {campo.opciones?.map((o) => (
-            <label key={o} className="inline-flex min-h-8 items-center gap-2 text-[0.9375rem]">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
+            <Checkbox  key={o} className="inline-flex min-h-8 items-center gap-2 text-[0.9375rem]"
+
                 checked={elegidas.includes(o)}
                 onChange={(e) => {
                   // "Ninguna" excluye a las demás opciones.
@@ -201,10 +197,7 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
                   if (e.target.checked && o === 'Ninguna') nuevas = ['Ninguna']
                   else if (e.target.checked) nuevas = nuevas.filter((x) => x !== 'Ninguna')
                   cambiar(campo.opciones!.filter((x) => nuevas.includes(x)).join('; '))
-                }}
-              />
-              {o}
-            </label>
+                }} labelElement={<>{o}</>} />
           ))}
         </fieldset>
       )
@@ -227,7 +220,7 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
       const ayuda = campo.tipo === 'fecha' ? 'dd-mm-aaaa' : campo.tipo === 'hora' ? 'hh:mm' : campo.placeholder
       return (
         <>
-          <input
+          <Entrada
             aria-label={`${etiqueta}${campo.tipo === 'fecha' ? ', formato día-mes-año' : ''}`}
             type="text"
             inputMode={campo.tipo === 'numero' || campo.tipo === 'hora' ? 'numeric' : campo.tipo === 'decimal' ? 'decimal' : undefined}

@@ -1,3 +1,4 @@
+import { Tag } from '@blueprintjs/core'
 import type { EstadoAtencion } from '../lib/tipos'
 import { IconoCompleto, IconoConPreAtencion, IconoEnAtencion, IconoSinIniciar, type Icono } from './iconos'
 import { cx } from './ui'
@@ -17,9 +18,8 @@ export const ORDEN_ESTADOS: EstadoAtencion[] = ['en_espera', 'con_pre_atencion',
 export function EstadoCita({ estado, className }: { estado: EstadoAtencion; className?: string }) {
   const { nombre, icono: IconoEstado, colorIcono } = ESTADOS[estado]
   return (
-    <span className={cx('inline-flex items-center gap-1.5 whitespace-nowrap text-[0.8125rem] font-medium text-fg', className)}>
-      <IconoEstado size={16} className={cx('shrink-0', colorIcono)} aria-hidden="true" />
+    <Tag minimal intent={estado === 'cerrado' ? 'success' : estado === 'en_espera' ? 'none' : 'primary'} icon={<IconoEstado size={16} className={colorIcono} aria-hidden="true" />} className={cx('rce-tag whitespace-nowrap', className)}>
       {nombre}
-    </span>
+    </Tag>
   )
 }

@@ -1,3 +1,5 @@
+import { Checkbox } from '@blueprintjs/core'
+import { HTMLTable, Button } from '@blueprintjs/core'
 import { useState, type FormEvent } from 'react'
 import { Navigate, useParams } from 'react-router-dom'
 import { IconoAgregar, IconoAltaUsuario, IconoCompleto, IconoDarDeBaja, IconoQuitar, IconoSinAcceso } from '../components/iconos'
@@ -50,7 +52,7 @@ function Usuarios() {
     <div className="mx-auto max-w-[72rem]">
       <TituloPantalla titulo="Usuarios y roles" detalle="Alta, baja y asignación de rol. Cada cambio queda en el registro de accesos." />
       <div className="relative overflow-x-auto rounded-lg border border-line bg-surface">
-        <table className="w-full min-w-[44rem] border-collapse text-left">
+        <HTMLTable className="w-full min-w-[44rem] border-collapse text-left">
           <caption className="sr-only">Usuarios del sistema</caption>
           <thead className="bg-muted text-sm">
             <tr>
@@ -97,7 +99,7 @@ function Usuarios() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </HTMLTable>
       </div>
 
       <Tarjeta id="nuevo-usuario" titulo="Nuevo usuario" className="mt-6">
@@ -228,14 +230,11 @@ function Plantillas() {
                       </span>
                     </span>
                     {c.personalizado && <Insignia tono="info">Agregado</Insignia>}
-                    <label className="inline-flex min-h-9 items-center gap-2 text-sm">
-                      <input type="checkbox" className="size-4 accent-primary" checked={Boolean(c.obligatorio)} onChange={(e) => editar(c.id, { obligatorio: e.target.checked })} />
-                      Obligatorio<span className="sr-only">: {c.etiqueta}</span>
-                    </label>
+                    <Checkbox  className="inline-flex min-h-9 items-center gap-2 text-sm"   checked={Boolean(c.obligatorio)} onChange={(e) => editar(c.id, { obligatorio: e.target.checked })} labelElement={<>Obligatorio<span className="sr-only">: {c.etiqueta}</span></>} />
                     {c.personalizado && (
-                      <button type="button" onClick={() => quitar(c.id)} aria-label={`Quitar campo ${c.etiqueta}`} className="grid size-9 place-items-center rounded-md text-danger hover:bg-danger-soft">
+                      <Button variant="minimal" type="button" onClick={() => quitar(c.id)} aria-label={`Quitar campo ${c.etiqueta}`} className="grid size-9 place-items-center rounded-md text-danger hover:bg-danger-soft">
                         <IconoQuitar size={16} aria-hidden="true" />
-                      </button>
+                      </Button>
                     )}
                   </li>
                 ))}
@@ -283,10 +282,7 @@ function Plantillas() {
               <Campo etiqueta="Opciones" ayuda="Separadas por coma.">{(p) => <Entrada {...p} value={campo.opciones} placeholder="Ej.: Grado I, Grado II, Grado III" onChange={(e) => setCampo({ ...campo, opciones: e.target.value })} />}</Campo>
             )}
             {(campo.tipo === 'numero' || campo.tipo === 'decimal') && <Campo etiqueta="Unidad (opcional)">{(p) => <Entrada {...p} value={campo.unidad} placeholder="Ej.: mmHg" onChange={(e) => setCampo({ ...campo, unidad: e.target.value })} />}</Campo>}
-            <label className="inline-flex min-h-10 items-center gap-2">
-              <input type="checkbox" className="size-4 accent-primary" checked={campo.obligatorio} onChange={(e) => setCampo({ ...campo, obligatorio: e.target.checked })} />
-              Obligatorio para que la consulta quede completa
-            </label>
+            <Checkbox  className="inline-flex min-h-10 items-center gap-2"   checked={campo.obligatorio} onChange={(e) => setCampo({ ...campo, obligatorio: e.target.checked })} labelElement={<>Obligatorio para que la consulta quede completa</>} />
             {error && (
               <p role="alert" className="text-sm text-danger">
                 {error}
@@ -334,9 +330,9 @@ function ListaCatalogo({ titulo, clave, catalogos, onGuardar, ejemplo }: { titul
         {lista.map((item) => (
           <li key={item} className="flex min-h-11 items-center justify-between gap-3 px-3 py-1.5">
             <span className="min-w-0">{item}</span>
-            <button type="button" onClick={() => onGuardar({ ...catalogos, [clave]: lista.filter((x) => x !== item) })} aria-label={`Quitar ${item}`} className="grid size-9 shrink-0 place-items-center rounded-md text-danger hover:bg-danger-soft">
+            <Button variant="minimal" type="button" onClick={() => onGuardar({ ...catalogos, [clave]: lista.filter((x) => x !== item) })} aria-label={`Quitar ${item}`} className="grid size-9 shrink-0 place-items-center rounded-md text-danger hover:bg-danger-soft">
               <IconoQuitar size={16} aria-hidden="true" />
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
@@ -364,7 +360,7 @@ function Auditoria() {
         <Aviso titulo="Sin eventos en este recorrido">Ingrese como oftalmólogo o tecnólogo y abra una ficha: el acceso aparecerá aquí.</Aviso>
       ) : (
         <div className="relative overflow-x-auto rounded-lg border border-line bg-surface">
-          <table className="w-full min-w-[40rem] border-collapse text-left">
+          <HTMLTable className="w-full min-w-[40rem] border-collapse text-left">
             <caption className="sr-only">Eventos de auditoría, del más reciente al más antiguo</caption>
             <thead className="bg-muted text-sm">
               <tr>
@@ -384,7 +380,7 @@ function Auditoria() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </HTMLTable>
         </div>
       )}
     </div>

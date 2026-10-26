@@ -1,3 +1,4 @@
+import { HTMLTable } from '@blueprintjs/core'
 import { useState, type ReactNode } from 'react'
 import { DialogoDocumento, HojaDocumento } from '../../components/Documento'
 import { IconoAgregar, IconoCompleto, IconoImprimir, IconoOrdenExamen, IconoQuitar, IconoRecetaMedicamentos, IconoRecetaOptica, IconoTraerDelExamen } from '../../components/iconos'
@@ -119,7 +120,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
           <fieldset disabled={soloLectura}>
             <legend className="sr-only">Valores de la receta óptica por ojo</legend>
             <div className="relative overflow-x-auto">
-              <table className="w-full min-w-[28rem] border-collapse">
+              <HTMLTable className="w-full min-w-[28rem] border-collapse">
                 <thead>
                   <tr className="border-b border-line bg-muted text-sm">
                     <th scope="col" className="px-3 py-2 text-left font-semibold">Campo</th>
@@ -140,7 +141,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                       <th scope="row" className="px-3 py-1.5 text-left font-normal">{etiqueta}</th>
                       {(['OD', 'OI'] as Ojo[]).map((o) => (
                         <td key={o} className="px-2 py-1.5">
-                          <input
+                          <Entrada
                             aria-label={`${etiqueta}, ${o}`}
                             inputMode="decimal"
                             value={ro[o][clave]}
@@ -152,7 +153,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </HTMLTable>
             </div>
             <div className="mt-4 grid gap-4 sm:grid-cols-[10rem_1fr]">
               <Campo etiqueta="Distancia pupilar (mm)">

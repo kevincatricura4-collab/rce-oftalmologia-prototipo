@@ -1,3 +1,4 @@
+import { HTMLTable } from '@blueprintjs/core'
 import { NOMBRE_DESENLACE } from '../../lib/catalogos'
 import { establecimiento, sic as buscarSic } from '../../lib/datos'
 import type { Consulta, Diagnostico, OrdenExamen, RecetaMedicamento, RecetaOptica } from '../../lib/tipos'
@@ -20,7 +21,7 @@ export function CuerpoRecetaOptica({ receta }: { receta: RecetaOptica }) {
   ]
   return (
     <>
-      <table className="w-full border-collapse text-sm">
+      <HTMLTable className="w-full border-collapse text-sm">
         <thead>
           <tr>
             <th className={th}>Lejos / cerca</th>
@@ -39,7 +40,7 @@ export function CuerpoRecetaOptica({ receta }: { receta: RecetaOptica }) {
             </tr>
           ))}
         </tbody>
-      </table>
+      </HTMLTable>
       <p className="mt-3 text-sm">
         <strong>Distancia pupilar:</strong> {receta.distanciaPupilar ? `${receta.distanciaPupilar} mm` : '—'}
       </p>

@@ -1,0 +1,105 @@
+/* Blueprint aporta los controles; estos ajustes mantienen el contexto clínico y el layout. */
+@layer components {
+  body { background: var(--canvas); color: var(--fg); font: 14px/1.5 var(--font-sans); letter-spacing: normal; }
+  p { margin: 0; }
+  strong { font-weight: 600; }
+  h1, h2, h3, h4 { font-family: var(--font-display); }
+  fieldset { min-width: 0; }
+  .bp6-button { font-family: inherit; gap: 6px; }
+  .bp6-button .bp6-button-text { display: contents; }
+  .bp6-button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  .bp6-button:disabled { cursor: not-allowed; }
+  .rce-navbar.bp6-navbar { display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 24px; background: #1c2127; box-shadow: none; border-bottom: 1px solid #404854; color: #f6f7f9; }
+  .rce-navbar .bp6-navbar-group { height: 56px; float: none; }
+  .rce-navbar .bp6-navbar-heading { margin: 0; }
+  .rce-navbar .text-fg-muted { color: #c5cbd3; }
+  .rce-navbar .rce-role-location { color: #c5cbd3; }
+  .rce-brand { font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .rce-brand > span { display: block; }
+  .rce-brand > span + span { color: #abb3bf; }
+  .rce-workspace { padding: 24px 20px 20px; border-bottom: 1px solid var(--line); }
+  .rce-sidebar .bp6-menu { background: transparent; min-width: 0; padding: 8px; }
+  .rce-sidebar .bp6-menu-header { margin: 12px 8px 8px; border: 0; }
+  .rce-menu-link.bp6-menu-item { display: flex; gap: 12px; padding: 11px 12px; margin-bottom: 4px; border-radius: 4px; font-size: 14px; color: var(--fg-muted); }
+  .rce-menu-link.bp6-active { background: var(--primary-soft); color: var(--primary); font-weight: 600; }
+  .rce-sidebar .bp6-button { justify-content: flex-start; text-align: left; }
+  .rce-main { padding-top: 28px; padding-bottom: 40px; }
+  .bp6-portal { z-index: 100; }
+  .rce-navigation-drawer > .rce-sidebar { flex: 1; min-height: 0; height: auto; }
+  .rce-navigation-drawer .bp6-drawer-header { flex-shrink: 0; }
+  .bp6-card.rce-card { padding: 0; border: 1px solid var(--line); box-shadow: 0 1px 2px rgb(0 0 0 / 4%); border-radius: 6px; background: var(--surface); }
+  .rce-card-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+  .rce-card-header h2 { font-size: 15px; font-weight: 600; }
+  .rce-card-footer { padding: 12px 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--fg-muted); }
+  .rce-consulta-tabs > .bp6-tab-list { padding: 0 16px; gap: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow-x: auto; white-space: nowrap; }
+  .rce-consulta-tabs .bp6-tab { min-height: 48px; line-height: 48px; margin: 0; font-size: 14px; }
+  .rce-consulta-tabs .bp6-tab-panel { margin-top: 24px; }
+  .rce-outcome.bp6-control { margin: 0; padding-left: 36px; min-height: 88px; }
+  .rce-outcome.bp6-control .bp6-control-indicator { position: absolute; left: 12px; top: 16px; margin: 0; }
+  .bp6-control.bp6-checkbox { margin-bottom: 0; font-size: 14px; line-height: 22px; }
+  .rce-field.bp6-form-group { margin-bottom: 0; min-width: 0; }
+  .rce-field .bp6-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--fg-muted); }
+  .rce-field .bp6-form-helper-text { font-size: 13px; color: var(--fg-muted); line-height: 1.5; }
+  .rce-field .bp6-form-helper-text:empty { display: none; }
+  .rce-input-group { min-width: 0; }
+  .rce-input-icon { display: inline-flex; align-items: center; height: 36px; padding-left: 10px; color: var(--fg-muted); }
+  .rce-input.bp6-input, .rce-textarea.bp6-input { font-family: inherit; color: var(--fg); font-size: 14px; min-width: 0; }
+  .rce-input.bp6-input { height: 36px; line-height: 36px; }
+  .rce-input.bp6-input:not(:disabled), .rce-textarea.bp6-input:not(:disabled), .rce-select select:not(:disabled) { box-shadow: inset 0 0 0 1px var(--line-strong); }
+  .rce-input.bp6-input:focus, .rce-textarea.bp6-input:focus, .rce-select select:focus { outline: 2px solid var(--ring); outline-offset: 1px; }
+  .rce-input.bp6-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1px var(--danger); }
+  .rce-input::placeholder, .rce-textarea::placeholder { color: var(--fg-muted); opacity: 1; }
+  .rce-input:read-only, .rce-textarea:read-only { background: var(--muted); }
+  .rce-input:read-only::placeholder, .rce-textarea:read-only::placeholder { color: transparent; }
+  .rce-textarea { min-height: 80px; line-height: 1.6; resize: vertical; padding: 10px 12px; }
+  .rce-select.bp6-html-select { width: 100%; min-width: 0; }
+  .rce-select.bp6-html-select select { width: 100%; min-width: 0; height: 36px; font-family: inherit; font-size: 14px; }
+  .rce-segmented .bp6-radio-group { display: flex; flex-wrap: wrap; gap: 0; }
+  .rce-segmented .bp6-radio { display: inline-flex; align-items: center; justify-content: center; min-height: 36px; margin: 0; padding: 8px 14px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--fg-muted); font-size: 14px; }
+  .rce-segmented .bp6-radio + .bp6-radio { margin-left: -1px; }
+  .rce-segmented .bp6-radio:first-child { border-radius: 4px 0 0 4px; }
+  .rce-segmented .bp6-radio:last-child { border-radius: 0 4px 4px 0; }
+  .rce-segmented .bp6-control-indicator { display: none; }
+  .rce-segmented .bp6-radio:has(input:checked) { position: relative; z-index: 1; color: var(--primary); border-color: var(--primary); background: var(--primary-soft); font-weight: 600; }
+  .rce-segmented .bp6-radio:has(input:focus-visible) { z-index: 2; outline: 2px solid var(--ring); outline-offset: 2px; }
+  .rce-segmented-small .bp6-radio { padding: 6px 12px; min-height: 32px; }
+  .bp6-tag { font-size: 13px; }
+  .rce-callout.bp6-callout { font-size: 14px; line-height: 1.6; border-radius: 4px; }
+  .rce-callout .bp6-heading { font-size: 15px; }
+  .bp6-html-table { font-family: inherit; color: var(--fg); }
+  .bp6-html-table th { color: var(--fg-muted); }
+  .bp6-html-table tbody tr:hover > td { background: color-mix(in srgb, var(--muted) 55%, transparent); }
+  .bp6-html-table tbody td, .bp6-html-table tbody th { box-shadow: none; }
+  .rce-agenda-action { min-height: 32px; font-size: 13px; padding: 6px 10px; }
+  [data-agenda-filtros] { box-shadow: 0 1px 2px rgb(0 0 0 / 4%); }
+  [data-agenda-filtros] .bp6-button { justify-content: flex-start; border-radius: 0; }
+  details { border-radius: 6px; }
+  summary { font-size: 14px; }
+  details[open] > summary { border-bottom: 1px solid var(--line); }
+  .rce-patient-card { border-top: 3px solid var(--primary); }
+  .rce-document-dialog.bp6-dialog { width: min(800px, calc(100vw - 32px)); max-height: 92dvh; padding-bottom: 0; background: var(--canvas); }
+  .rce-document-dialog .bp6-dialog-header { background: var(--surface); }
+  .rce-document-dialog .bp6-dialog-body { margin: 0; padding: 20px; overflow-y: auto; }
+  .rce-document-dialog .bp6-dialog-footer { margin: 0; padding: 12px 20px; background: var(--surface); border-top: 1px solid var(--line); }
+  .rce-login { max-width: 1160px; margin: 0 auto; padding: 56px 32px; }
+  .rce-login-intro { max-width: 600px; margin-bottom: 32px; }
+  .rce-login-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .rce-role-card.bp6-card { display: flex; flex-direction: column; padding: 24px; min-height: 216px; border: 1px solid var(--line); border-radius: 6px; }
+  .rce-role-card .bp6-button { align-self: flex-start; margin-top: auto; }
+  @media (max-width: 767px) {
+    .rce-navbar.bp6-navbar { padding: 0 12px; gap: 8px; }
+    .rce-navbar .bp6-navbar-group { gap: 8px; }
+    .rce-brand { font-size: 14px; }
+    .rce-login { padding: 32px 16px; }
+    .rce-login-grid { grid-template-columns: 1fr; }
+    .rce-card-header { padding: 12px 16px; }
+  }
+}
+
+@media print {
+  html { color-scheme: light; }
+  .hoja-imprimible, .hoja-imprimible * { color: #000 !important; }
+  .hoja-imprimible table, .hoja-imprimible th, .hoja-imprimible td { background: #fff !important; box-shadow: none !important; }
+  body:has(.rce-document-dialog) #root, .bp6-overlay-backdrop, .rce-document-dialog .bp6-dialog-header, .rce-document-dialog .bp6-dialog-footer { display: none !important; }
+  .bp6-overlay, .bp6-portal, .bp6-dialog-container, .rce-document-dialog.bp6-dialog, .rce-document-dialog .bp6-dialog-body { position: static !important; display: block !important; width: auto !important; max-width: none !important; max-height: none !important; height: auto !important; margin: 0 !important; padding: 0 !important; overflow: visible !important; transform: none !important; background: white !important; box-shadow: none !important; }
+}

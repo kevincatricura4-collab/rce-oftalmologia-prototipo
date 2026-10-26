@@ -105,6 +105,7 @@ export function ProveedorEstado({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.dataset.theme = tema === 'oscuro' ? 'dark' : 'light'
+    document.documentElement.classList.toggle('bp6-dark', tema === 'oscuro')
     escribir(local, CLAVE_TEMA, tema)
   }, [tema])
 

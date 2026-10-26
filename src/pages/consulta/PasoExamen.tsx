@@ -1,3 +1,4 @@
+import { HTMLTable } from '@blueprintjs/core'
 import { Link } from 'react-router-dom'
 import { FormularioExamen } from '../../components/FormularioExamen'
 import { IconoAvanzar } from '../../components/iconos'
@@ -102,7 +103,7 @@ function PanelControlesPrevios({ consulta }: { consulta: Consulta }) {
       {previos.length === 0 ? (
         <p className="mt-2 text-sm text-fg-muted">Primer control: no hay registros previos en el módulo.</p>
       ) : (
-        <table className="mt-3 w-full text-[0.9375rem]">
+        <HTMLTable className="mt-3 w-full text-[0.9375rem]">
           <caption className="sr-only">Presión intraocular por ojo en controles anteriores y hoy, en mmHg</caption>
           <thead>
             <tr className="border-b border-line-strong/50 text-sm text-fg-muted">
@@ -135,7 +136,7 @@ function PanelControlesPrevios({ consulta }: { consulta: Consulta }) {
               <td className="py-1.5 text-right">{hoy.pio?.OI || '—'}</td>
             </tr>
           </tbody>
-        </table>
+        </HTMLTable>
       )}
       {notas.length > 0 && (
         <ul className="mt-3 flex flex-col gap-1 text-sm text-fg-muted">

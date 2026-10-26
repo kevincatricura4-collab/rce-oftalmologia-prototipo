@@ -1,3 +1,4 @@
+import { Radio } from '@blueprintjs/core'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DialogoDocumento, HojaDocumento } from '../../components/Documento'
@@ -56,19 +57,18 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
               {DESENLACES.filter((d) => !soloLectura || d.id === consulta.desenlace).map((d) => {
                 const activo = consulta.desenlace === d.id
                 return (
-                  <label
+                  <Radio
+                    name="desenlace" value={d.id} checked={activo} onChange={() => elegirDesenlace(d.id)}
                     key={d.id}
                     className={cx(
-                      'flex cursor-pointer items-start gap-3 rounded-md border p-3 transition-colors duration-150 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring',
+                      'rce-outcome cursor-pointer rounded-md border p-3 transition-colors duration-150 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring',
                       activo ? 'border-primary bg-primary-soft ring-1 ring-primary' : 'border-line-strong hover:bg-muted',
                     )}
-                  >
-                    <input type="radio" name="desenlace" className="mt-1 size-4 shrink-0 accent-primary" checked={activo} onChange={() => elegirDesenlace(d.id)} />
-                    <span>
+                    labelElement={<span>
                       <span className="block font-semibold">{d.nombre}</span>
                       <span className="block text-sm text-fg-muted">{d.detalle}</span>
-                    </span>
-                  </label>
+                    </span>}
+                  />
                 )
               })}
             </div>

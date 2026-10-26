@@ -1,3 +1,4 @@
+import { Checkbox } from '@blueprintjs/core'
 import { TarjetaSic } from '../../components/TarjetaSic'
 import { AreaTexto, Boton, Campo, Entrada, Tarjeta } from '../../components/ui'
 import { ANTECEDENTES_SISTEMICOS } from '../../lib/catalogos'
@@ -40,10 +41,7 @@ export function PasoAnamnesis({ consulta, soloLectura, actualizar }: PropsPaso) 
             <legend className="mb-1 text-[0.8125rem] font-medium text-fg-muted">Antecedentes sistémicos</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {ANTECEDENTES_SISTEMICOS.map((o) => (
-                <label key={o} className="inline-flex min-h-10 items-center gap-2">
-                  <input type="checkbox" className="size-4 accent-primary" checked={a.antecedentesSistemicos.includes(o)} onChange={(e) => alternarAntecedente(o, e.target.checked)} />
-                  {o}
-                </label>
+                <Checkbox  key={o} className="inline-flex min-h-10 items-center gap-2"   checked={a.antecedentesSistemicos.includes(o)} onChange={(e) => alternarAntecedente(o, e.target.checked)} labelElement={<>{o}</>} />
               ))}
             </div>
             {sic.diabetes !== null && (

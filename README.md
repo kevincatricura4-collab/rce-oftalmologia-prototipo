@@ -47,23 +47,20 @@ Se conserva la consulta original y cada incorporación tiene autor y fecha.
 
 ### Blueprint
 
-Está instalado `@blueprintjs/core` 6.21.0 (Blueprint 6), que declara soporte para React 19. Los componentes
-actuales conservan el sistema de diseño del prototipo. Para incorporar componentes Blueprint
-en una pantalla, importe el componente y su hoja de estilos:
+La interfaz completa utiliza `@blueprintjs/core` **6.21.0**: navegación, tarjetas,
+formularios, pestañas, tablas, estados y diálogos. Los adaptadores del dominio están en
+`src/components/ui.tsx`; los estilos de Blueprint se cargan por capas desde `src/index.css`
+y se ajustan en `src/blueprint.css`.
 
-```tsx
-import { Button } from '@blueprintjs/core'
-import '@blueprintjs/core/lib/css/blueprint.css'
-```
-
-La hoja de estilos contiene reglas globales: al incorporarla hay que revisar su convivencia
-con Tailwind y los tokens clínicos. Para el tema oscuro, Blueprint utiliza la clase `bp6-dark`
-en un contenedor. No se requieren CDN ni instalaciones globales.
+El tema oscuro utiliza `bp6-dark` en `html`, incluidos los portales. `OverlaysProvider`
+administra el menú móvil y los diálogos. Los documentos se imprimen en negro sobre blanco.
+No se requieren CDN ni instalaciones globales. El sistema de diseño está documentado en
+`design-system/MASTER.md`.
 
 La instalación y `npm ci --dry-run` finalizan correctamente, aunque npm advierte que la
 dependencia interna `react-popper@2.3.0` declara React hasta la versión 18. No se forzaron
-versiones ni se ocultó la advertencia. Antes de migrar ventanas emergentes, verificar esos
-componentes con React 19. La compilación y las pruebas del prototipo pasan con Blueprint instalado.
+versiones ni se ocultó la advertencia. Los componentes utilizados (Drawer, Dialog, Alert, formularios y pestañas) se verificaron
+en navegador con React 19; cualquier uso futuro de otros componentes emergentes requiere su prueba. La compilación y las pruebas del prototipo pasan con Blueprint instalado.
 
 `npm audit` también detecta un aviso de severidad alta en el Vite 8.3.2 que ya utilizaba el
 proyecto; corresponde a las herramientas de desarrollo, no a un paquete nuevo de Blueprint.
@@ -71,6 +68,6 @@ proyecto; corresponde a las herramientas de desarrollo, no a un paquete nuevo de
 React, TypeScript, Vite y Tailwind CSS. El sistema completo contempla backend en Python con
 FastAPI y base de datos PostgreSQL, con el modelo de datos homologado a recursos HL7 FHIR.
 
-Sistema de diseño elaborado con [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (licencia MIT).
+Guías de usabilidad originales de [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (licencia MIT).
 Íconos de [IBM Carbon](https://carbondesignsystem.com/elements/icons/library/) (licencia Apache-2.0, ver
 [docs/licencias/carbon-icons-LICENSE](docs/licencias/carbon-icons-LICENSE)); la marca de cuatro E de Snellen es propia.

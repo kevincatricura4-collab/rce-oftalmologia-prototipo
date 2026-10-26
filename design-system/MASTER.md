@@ -1,155 +1,85 @@
 # Sistema de diseño — RCE Oftalmología
 
-Fuente de verdad del diseño. Generado con el skill **UI UX Pro Max** (`.claude/skills/ui-ux-pro-max`)
-y ajustado al contexto clínico. Si una pantalla necesita desviarse, se documenta en
-`design-system/pages/<pantalla>.md` y esa regla manda sobre este archivo.
-
-## Origen de las decisiones
-
-| Dimensión | Resultado del skill | Aplicación |
-|---|---|---|
-| Tipo de producto | Patient Portal / Health Records (#182) | Registro clínico de uso profesional |
-| Estilo | Trust & Authority + Accessible & Ethical; secundario Minimalism | Sobrio, plano, alto contraste, sin decoración |
-| Densidad | Data-Dense Dashboard | Tablas y formularios compactos: 20 a 30 pacientes por jornada |
-| Color | Clinical blue + health green + alert red | Tokens de abajo |
-| Tipografía | Medical Clean: Figtree + Noto Sans | Figtree en títulos, Noto Sans en texto y datos |
-| Íconos | IBM Carbon, copiados en `src/components/iconos.tsx` (ver abajo) | 16 px en general; 20 px en avisos, controles del marco y "Sin acceso". Contorno para navegación y acciones; relleno para estado y severidad |
-
-**Anti-patrones del skill para salud:** colores neón, animación abundante, degradados
-morado/rosa "de IA", e información transmitida solo por color.
-
-**Anti-patrones de interfaz generada** (revisión de octubre de 2026): ícono dentro de un cuadrado
-de color pastel, tarjetas de indicador con ícono y número grande, estados como pastillas de
-color, logo de ojo dentro de un cuadrado, pastillas redondeadas por todos lados. Se reemplazan
-por indicadores de estado con forma, avisos con barra izquierda y etiquetas con borde.
-
-### Íconos y marca
-
-- **IBM Carbon** (licencia Apache-2.0, `docs/licencias/carbon-icons-LICENSE`). Los dibujos se
-  copian con `scripts/generar-iconos.mjs` en vez de instalar `@carbon/icons-react`, porque ese
-  paquete envía métricas de uso a IBM al instalarse en servidores de CI y contenedores. Las
-  pantallas importan solo desde `src/components/iconos.tsx`, con nombres en español
-  (`IconoAgenda`, `IconoFaltante`…).
-- **Marca:** cuatro E de Snellen en las cuatro orientaciones (cartilla de E direccional), dibujo
-  propio en `LogoRce`, en `primary` y sin contenedor. El favicon usa una sola E, porque cuatro se
-  empastan a 16 px.
-
-## Tokens de color
-
-Definidos en `src/index.css` como variables CSS y expuestos a Tailwind con `@theme inline`.
-Las pantallas usan **solo clases de token** (`bg-surface`, `text-fg-muted`, `border-line`…),
-nunca hex ni colores de la paleta por defecto de Tailwind.
-
-| Token | Clase | Claro | Oscuro | Uso |
-|---|---|---|---|---|
-| canvas | `bg-canvas` | `#F0F9FF` | `#06141D` | Fondo de la aplicación |
-| surface | `bg-surface` | `#FFFFFF` | `#0C2130` | Tarjetas, tablas, campos |
-| muted | `bg-muted` | `#E8F2F8` | `#12303F` | Encabezados de tabla, paneles secundarios |
-| fg | `text-fg` | `#082F49` | `#E6F3FB` | Texto principal |
-| fg-muted | `text-fg-muted` | `#475569` | `#A3BCCC` | Texto secundario, etiquetas |
-| line | `border-line` | `#CFE3EF` | `#1D4155` | Divisores y bordes de tarjeta |
-| line-strong | `border-line-strong` | `#6B8CA3` | `#5D889F` | Borde de campos (contraste 3:1) |
-| primary | `bg-primary` `text-primary` | `#0369A1` | `#6CB0E0` | Acción principal, enlaces, selección |
-| primary-hover | `bg-primary-hover` | `#075985` | `#9CCBE9` | Hover de la acción principal |
-| primary-soft | `bg-primary-soft` | `#E0F2FE` | `#0B3A52` | Fondo de elemento seleccionado |
-| on-primary | `text-on-primary` | `#FFFFFF` | `#04202E` | Texto sobre primary |
-| ok / ok-soft | `text-ok` `bg-ok-soft` | `#15803D` / `#DCFCE7` | `#4ADE80` / `#0F3A23` | Completo, cerrado, dentro de meta |
-| warn / warn-soft / warn-line | `text-warn` `bg-warn-soft` `border-warn-line` | `#92400E` / `#FEF3C7` / `#B45309` | `#FCD34D` / `#3B2A07` / `#D97706` | Dato faltante, SIC incompleta, pendiente |
-| danger / danger-soft | `text-danger` `bg-danger-soft` | `#B91C1C` / `#FEE2E2` | `#FCA5A5` / `#4A1616` | Error, valor fuera de rango, acción destructiva |
-| od / od-soft | `text-od` `bg-od-soft` | `#0369A1` / `#E0F2FE` | `#7DD3FC` / `#0B3A52` | Ojo derecho |
-| oi / oi-soft | `text-oi` `bg-oi-soft` | `#0F766E` / `#CCFBF1` | `#5EEAD4` / `#0C3B38` | Ojo izquierdo |
-| ring | `outline-ring` | `#0284C7` | `#7DD3FC` | Foco de teclado |
-
-El azul primario del skill (`#0284C7`) con texto blanco da 4,1:1, bajo el mínimo AA. Por eso
-el botón usa `#0369A1` (5,9:1) y `#0284C7` queda solo para el anillo de foco.
-
-### Modo box oscuro
-
-La lámpara de hendidura y el fondo de ojo se hacen con la luz baja, y una pantalla blanca
-encandila. El tema oscuro (`data-theme="dark"` en `<html>`) existe por eso. En oscuro, `primary` es un azul
-desaturado (`#6CB0E0`) y no un cian saturado: con la luz baja del box un relleno muy brillante
-destella. Da 7,1:1 con `on-primary` y 7:1 como texto sobre `surface`. Toda pantalla se
-revisa en ambos temas antes de darla por terminada.
-
-## Tipografía
-
-| Rol | Fuente | Tamaño | Peso |
-|---|---|---|---|
-| Título de pantalla | Figtree (`font-display`) | 22–24 px | 700 |
-| Título de sección | Figtree | 16–18 px | 600 |
-| Texto y campos | Noto Sans (`font-sans`) | 15–16 px | 400 |
-| Etiqueta de campo | Noto Sans | 13 px | 500 |
-| Celda de tabla | Noto Sans | 14–15 px | 400 |
-| Valor clínico | Noto Sans, `tabular-nums` | 15–16 px | 500–600 |
-
-- Nada por debajo de 13 px.
-- Las fuentes se empaquetan con Fontsource (`@fontsource-variable/*`). **No usar Google
-  Fonts por CDN**: el sistema corre en intranet, sin salida a internet.
-- Números con coma decimal (0,5) y siempre `tabular-nums` para que las columnas OD/OI alineen.
-
-## Espaciado y forma
-
-- Ritmo de 4/8 px. Relleno de tarjeta 16–20 px; separación entre secciones 24 px.
-- Fila de tabla 40–44 px; campo de formulario 40 px de alto.
-- Radio 8 px en tarjetas y 6 px en campos y botones. Sin sombras decorativas: las tarjetas
-  se separan con borde `line`. Sombra solo en capas flotantes (menú, modal).
-- Barra lateral 240 px, encabezado 56 px. Bajo 1024 px la barra lateral se colapsa.
-- Diseñado para escritorio de box (1366×768 en adelante) y usable en tablet. Sin
-  desplazamiento horizontal de página; las tablas anchas se desplazan dentro de su contenedor.
-
-## Convenciones clínicas
-
-1. **OD a la izquierda, OI a la derecha, siempre.** Columnas fijas, con la sigla en el
-   encabezado. El color (`od` / `oi`) acompaña, nunca reemplaza a la sigla.
-2. **Origen del dato visible.** Un valor que viene de la pre-atención lleva la etiqueta
-   "desde pre-atención"; uno que viene de la SIC, "desde SIC".
-3. **Dato faltante ≠ error.** Lo que falta se marca en ámbar (`warn`) con ícono y texto. Rojo
-   (`danger`) solo para errores y valores fuera de rango.
-4. **Obligatorio por estado.** No hay asteriscos rojos en todo el formulario. Lo exigido para
-   cerrar se lista en el paso de cierre.
-5. **Estado con ícono + texto.** En espera, con pre-atención, en atención, cerrado: cada uno
-   con su ícono; nunca un punto de color solo. La forma avanza con el estado: anillo punteado
-   (en espera) → anillo con cuña (con pre-atención) → anillo con disco (en atención) → check
-   relleno (cerrado). La tinta crece en cada paso; no usar medio círculo para "en atención",
-   que se confunde con la cuña. El texto va en color normal y el color solo en el ícono. Severidad por forma:
-   triángulo ámbar = faltante, hexágono rojo = fuera de rango, círculo tachado = error, círculo
-   con i = información.
-6. **Autoría visible.** Cada bloque registrado muestra quién y a qué hora.
-7. **Marca "Datos de prueba"** siempre visible en el encabezado.
+Fuente de verdad de la interfaz. Por solicitud del usuario, la aplicación utiliza
+**Blueprint 6.21.0**. Esta revisión sustituye las decisiones visuales previas, manteniendo
+las convenciones clínicas y el alcance del prototipo.
 
 ## Componentes
 
-- **Botón primario:** uno por pantalla (la acción que avanza el flujo). Secundario con borde.
-  Destructivo en `danger`, separado del primario.
-- **Campo:** etiqueta visible arriba, nunca solo placeholder. Borde `line-strong`. Error bajo
-  el campo, con `role="alert"`.
-- **Tabla por ojo:** primera columna el campo, luego OD y OI de igual ancho. Encabezado fijo
-  si la tabla es larga.
-- **Selector segmentado:** para tipo de atención y lateralidad (OD / OI / AO).
-- **Pasos de la consulta:** pestañas numeradas con marca de completo o pendiente.
-- **Aviso:** notificación en línea con barra izquierda de 3 px, ícono de forma propia, título
-  corto y qué hacer. Fondo de color solo en lo que pide acción (faltante en ámbar, error en
-  rojo); información (azul) y confirmación (verde) van sobre la superficie con la barra.
-- **Insignia:** etiqueta con borde; solo faltante y error llevan fondo.
-- **Menú lateral:** filas a ras; el activo se marca con barra izquierda de 3 px, fondo y negrita.
-- **Filtro por estado:** franja segmentada con divisores de 1 px; el segmento activo lleva barra
-  inferior, fondo y `aria-pressed`.
-- **Documento imprimible:** receta, orden, contrarreferencia y resumen comparten una hoja
-  con membrete del hospital, datos del paciente, cuerpo, autor y fecha.
+| Función | Componente Blueprint | Integración |
+|---|---|---|
+| Acciones | Button | Adaptador `Boton`; variantes por intención y prioridad |
+| Campos de texto | InputGroup, TextArea | Adaptadores `Entrada` y `AreaTexto` |
+| Etiquetas y ayuda | FormGroup | Adaptador `Campo`; asociación label/id y errores accesibles |
+| Listas de opciones | HTMLSelect | Adaptador `Seleccion` |
+| Decisiones exclusivas | RadioGroup, Radio | Tipo de atención, lateralidad y desenlace |
+| Opciones múltiples | Checkbox | Antecedentes, examen y configuración |
+| Contenedores | Card | Tarjetas de perfiles, datos, documentos e indicadores |
+| Avisos | Callout | Información, pendientes, confirmaciones y errores |
+| Estados | Tag | Estados de citas, emisión de documentos y datos de prueba |
+| Tablas | HTMLTable | Agenda, examen por ojo, historial, documentos y administración |
+| Marco de aplicación | Navbar, Menu, MenuDivider | Barra superior y navegación por rol |
+| Navegación móvil | Drawer | Foco, Escape, fondo modal y rótulo accesible |
+| Pasos de consulta | Tabs, Tab | Panel activo ligado a la URL y navegación por teclado |
+| Documentos | Dialog, DialogBody, DialogFooter | Vista previa, foco y retorno desde impresión |
+| Reinicio de demostración | Alert | Confirmación explícita antes de restablecer datos |
 
-## Movimiento
+Los adaptadores en `src/components/ui.tsx` conservan los contratos de los formularios.
+Tailwind se utiliza para el layout responsivo, espaciado y convenciones clínicas; no es una
+segunda biblioteca de controles. Los enlaces de navegación mantienen React Router y las clases
+semánticas de Blueprint. Los gráficos SVG conservan su tabla de datos accesible.
 
-Transiciones de 150–200 ms solo en color y opacidad. Sin animaciones de entrada, sin
-parallax, sin desplazamiento animado. Se respeta `prefers-reduced-motion`.
+## CSS y temas
 
-## Lista de control antes de entregar una pantalla
+- `src/index.css`: capas CSS y tokens semánticos claros/oscuros.
+- `src/blueprint.css`: ajustes de layout, contraste, tipografía e impresión.
+- Orden de capas: `theme → base → blueprint → components → utilities`.
+- La clase `bp6-dark` se aplica a `html`, de modo que también heredan el tema los portales.
+- `OverlaysProvider` administra los diálogos y el panel móvil.
+- La barra superior es grafito en ambos temas; las superficies del contenido cambian de tema.
+- Todas las fuentes, estilos e iconos se empaquetan; no se utilizan CDN.
 
-- [ ] Contraste de texto ≥ 4,5:1 y de bordes de campo ≥ 3:1, en claro y en oscuro
-- [ ] Foco visible en todo elemento interactivo; orden de tabulación igual al visual
-- [ ] Todo campo con etiqueta asociada; botones de solo ícono con `aria-label`
-- [ ] Ninguna información depende solo del color
-- [ ] OD a la izquierda y OI a la derecha, con sigla
-- [ ] Sin emojis como íconos; íconos Carbon importados solo desde `components/iconos.tsx`, en 16 o 20 px
-- [ ] Sin hex ni colores fuera de los tokens
-- [ ] Funciona a 1366×768 y a 768 px de ancho sin desplazamiento horizontal
-- [ ] El rol que no corresponde no ve la pantalla ni el dato
+| Token | Claro | Oscuro |
+|---|---|---|
+| canvas | `#f6f7f9` | `#1c2127` |
+| surface | `#ffffff` | `#252a31` |
+| muted | `#eef1f4` | `#2f343c` |
+| fg | `#1c2127` | `#f6f7f9` |
+| fg-muted | `#5f6b7c` | `#abb3bf` |
+| line | `#dce0e5` | `#404854` |
+| line-strong | `#738091` | `#738091` |
+| primary | `#215db0` | `#8abbff` |
+
+Usar tokens en las pantallas. Las intenciones de Blueprint identifican acciones y avisos;
+no indicar un estado únicamente mediante color.
+
+## Tipografía y densidad
+
+- Noto Sans en campos y datos; Figtree en títulos. Fuentes locales de Fontsource.
+- Texto general: 14 px; etiquetas, ayudas y estados: 13 px; títulos: 18–24 px.
+- Controles de edición: 36 px; acciones principales: 40 px.
+- Ritmo de espaciado de 4/8 px, tarjetas con 16–20 px de contenido y radio de 6 px.
+- Barra superior: 56 px; lateral: 240 px. El menú se convierte en Drawer bajo 1024 px.
+- Tablas anchas se desplazan dentro de su contenedor. En teléfono, la agenda y el examen
+  conservan su presentación responsiva; no desplazar horizontalmente toda la página.
+- No introducir animaciones decorativas. Mantener foco visible y respetar movimiento reducido.
+
+## Convenciones clínicas
+
+1. OD siempre a la izquierda, OI a la derecha, con sigla visible; el color es complementario.
+2. Mantener visible la procedencia de los datos de pre-atención y SIC.
+3. Los campos del registro completo permanecen visibles; los adicionales pueden desplegarse.
+4. Borradores siempre permitidos. Validar al emitir documentos y al cerrar, según las reglas existentes.
+5. Consulta cerrada en solo lectura. Resultados posteriores son anexos con autor y fecha.
+6. Mantener roles, datos ficticios y marca permanente de datos de prueba.
+7. Mantener iconos clínicos Carbon existentes y la marca de Snellen. Blueprint aporta sus iconos
+   internos de control; no agregar otra biblioteca ni usar emojis como iconos.
+8. Imprimir solo el documento, con texto y mediciones negros sobre blanco en ambos temas.
+
+## Verificación
+
+- Revisar todas las pantallas en claro y oscuro, y las pantallas clínicas a 1366, 768 y 375 px.
+- Probar los cuatro roles y la restricción del historial del tecnólogo.
+- Comprobar pestañas por teclado, asociación de etiquetas, foco de modales, Escape y retorno de impresión.
+- Ejecutar `npm test` y `npm run build` antes de publicar cambios.
+- La validación clínica y las pruebas con usuarios siguen pendientes.

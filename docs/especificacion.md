@@ -359,3 +359,12 @@ Todo es ficticio. No usar nombres, RUN ni establecimientos reales.
 
 Estos ajustes organizan la información existente; la selección clínica de campos y la carga
 de trabajo aún requieren la revisión del oftalmólogo y las pruebas de usabilidad previstas.
+
+## 13. Diseño con Blueprint
+
+La interfaz utiliza Blueprint 6.21.0 en todas sus pantallas. La composición visual y los
+componentes vigentes se definen en `design-system/MASTER.md`. El flujo, las plantillas,
+los indicadores y las reglas del registro se conservan. El tema oscuro se propaga a los
+portales y la impresión de documentos permanece en negro sobre blanco.
+
+La cobertura de verificación se encuentra en `docs/auditoria-blueprint.md`.

@@ -1,3 +1,4 @@
+import { HTMLTable, Button } from '@blueprintjs/core'
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ESTADOS, EstadoCita, ORDEN_ESTADOS } from '../components/EstadoCita'
@@ -11,10 +12,10 @@ import { NOMBRE_TIPO } from '../lib/plantillas'
 import { useEstado } from '../lib/store'
 import type { Cita, EstadoAtencion } from '../lib/tipos'
 
-const claseAccion = 'inline-flex h-9 items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 text-sm font-medium transition-colors duration-150'
-const accionPrincipal = cx(claseAccion, 'bg-primary text-on-primary hover:bg-primary-hover')
-const accionSecundaria = cx(claseAccion, 'border border-line-strong bg-surface hover:bg-muted')
-const accionFantasma = cx(claseAccion, 'border border-transparent text-primary hover:bg-primary-soft')
+const claseAccion = 'bp6-button rce-agenda-action whitespace-nowrap'
+const accionPrincipal = cx(claseAccion, 'bp6-intent-primary')
+const accionSecundaria = cx(claseAccion, 'bp6-outlined')
+const accionFantasma = cx(claseAccion, 'bp6-minimal')
 
 /** Mensaje que deja otra pantalla al volver a la agenda (p. ej. "Pre-atención guardada"). */
 export interface EstadoNavegacionAgenda {
@@ -80,16 +81,16 @@ export function Agenda() {
         return (
           <>
             {preAtencion}
-            <button type="button" onClick={() => abrir(cita)} className={accionFantasma}>
+            <Button variant="minimal" type="button" onClick={() => abrir(cita)} className={accionFantasma}>
               Abrir sin pre-atención
-            </button>
+            </Button>
           </>
         )
       case 'con_pre_atencion':
         return (
-          <button type="button" onClick={() => abrir(cita)} className={principal}>
+          <Button variant="minimal" type="button" onClick={() => abrir(cita)} className={principal}>
             Abrir consulta <IconoAvanzar size={16} aria-hidden="true" />
-          </button>
+          </Button>
         )
       case 'en_atencion':
         return (
@@ -121,9 +122,9 @@ export function Agenda() {
         <div role="status" className="mb-5 flex items-start gap-3 rounded-sm border border-line border-l-[3px] border-l-ok bg-surface px-4 py-3">
           <IconoCompleto size={20} className="mt-0.5 shrink-0 text-ok" aria-hidden="true" />
           <p className="flex-1 font-medium">{aviso}</p>
-          <button type="button" onClick={() => setAviso(null)} aria-label="Cerrar aviso" className="-my-1 grid size-8 shrink-0 place-items-center rounded-sm transition-colors duration-150 hover:bg-muted">
+          <Button variant="minimal" type="button" onClick={() => setAviso(null)} aria-label="Cerrar aviso" className="-my-1 grid size-8 shrink-0 place-items-center rounded-sm transition-colors duration-150 hover:bg-muted">
             <IconoCerrar size={16} aria-hidden="true" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -136,9 +137,9 @@ export function Agenda() {
             {siguiente.estado === 'en_atencion' && abiertas.length > 1 && (
               <>
                 <span className="text-fg-muted"> · </span>
-                <button type="button" onClick={() => setFiltro('en_atencion')} className="text-sm font-medium text-primary hover:underline">
+                <Button variant="minimal" type="button" onClick={() => setFiltro('en_atencion')} className="text-sm font-medium text-primary hover:underline">
                   {abiertas.length} consultas abiertas
-                </button>
+                </Button>
               </>
             )}
           </p>
@@ -147,12 +148,12 @@ export function Agenda() {
       )}
 
       {/* Filtro segmentado con el conteo por estado. El activo se marca con barra inferior, negrita y aria-pressed, no solo con color. */}
-      <div role="group" aria-label="Filtrar por estado" className="mb-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-5">
+      <div role="group" aria-label="Filtrar por estado" data-agenda-filtros className="mb-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-5">
         {([null, ...ORDEN_ESTADOS] as (EstadoAtencion | null)[]).map((e) => {
           const activo = filtro === e
           const est = e ? ESTADOS[e] : null
           return (
-            <button
+            <Button variant="minimal"
               key={e ?? 'todos'}
               type="button"
               aria-pressed={activo}
@@ -166,7 +167,7 @@ export function Agenda() {
               {est && <est.icono size={16} className={cx('shrink-0', est.colorIcono)} aria-hidden="true" />}
               <span className="min-w-0">{est ? est.nombre.replace('-', '\u2011') : 'Todos'}</span>
               <span className="tnum ml-auto pl-2 text-base font-semibold">{e ? conteo[e] : filas.length}</span>
-            </button>
+            </Button>
           )
         })}
       </div>
@@ -176,7 +177,7 @@ export function Agenda() {
 
       {/* Bajo 768 px cada fila se vuelve tarjeta (hora y paciente arriba, estado y acción abajo): la acción nunca queda fuera de la vista. */}
       <div className="rounded-lg border border-line relative bg-surface md:overflow-x-auto">
-        <table className="w-full border-collapse text-left max-md:block md:min-w-[40rem]">
+        <HTMLTable className="w-full border-collapse text-left max-md:block md:min-w-[40rem]">
           <caption className="sr-only">Pacientes citados en la jornada{filtro ? `, filtrados por estado ${ESTADOS[filtro].nombre}` : ''}</caption>
           <thead className="bg-muted text-sm max-md:sr-only">
             <tr>
@@ -248,7 +249,7 @@ export function Agenda() {
               </tr>
             )}
           </tbody>
-        </table>
+        </HTMLTable>
       </div>
     </div>
   )
