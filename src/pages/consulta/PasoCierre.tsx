@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { DialogoDocumento, HojaDocumento } from '../../components/Documento'
 import { IconoAvanzar, IconoCompleto, IconoFaltante, IconoImprimir, IconoSoloLectura } from '../../components/iconos'
 import { Aviso, AreaTexto, Boton, Campo, Entrada, Insignia, Segmentado, Seleccion, Tarjeta, cx } from '../../components/ui'
+import { erroresContrarreferencia, sugerenciaContrarreferencia } from '../../lib/documentos'
 import { DESENLACES } from '../../lib/catalogos'
 import { avisosCierre, bloqueosCierre, camposPendientes, type Faltante } from '../../lib/consulta'
 import { ESTABLECIMIENTOS, sic as buscarSic } from '../../lib/datos'
@@ -19,6 +20,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
   const { cerrarConsulta } = useEstado()
   const [vista, setVista] = useState<'contrarreferencia' | 'resumen' | null>(null)
   const [confirmando, setConfirmando] = useState(false)
+  const [errores, setErrores] = useState<string[]>([])
   const sic = buscarSic(consulta.sicId)
 
   const bloqueos = bloqueosCierre(consulta)
@@ -26,9 +28,9 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
   const avisos = avisosCierre(consulta)
 
   const cr: Contrarreferencia = consulta.contrarreferencia ?? { destinoId: sic.establecimientoId, conducta: '', controlSugerido: '', emitida: null }
-  const fijarCr = (parcial: Partial<Contrarreferencia>) => actualizar((c) => ({ ...c, contrarreferencia: { ...cr, ...c.contrarreferencia, ...parcial } }))
+  const fijarCr = (parcial: Partial<Contrarreferencia>) => actualizar((c) => ({ ...c, contrarreferencia: { ...cr, ...c.contrarreferencia, emitida: null, ...parcial } }))
   const resumen = consulta.resumenPaciente ?? { texto: '', entregado: null }
-  const fijarResumen = (parcial: Partial<typeof resumen>) => actualizar((c) => ({ ...c, resumenPaciente: { ...resumen, ...c.resumenPaciente, ...parcial } }))
+  const fijarResumen = (parcial: Partial<typeof resumen>) => actualizar((c) => ({ ...c, resumenPaciente: { ...resumen, ...c.resumenPaciente, ...('texto' in parcial ? { entregado: null } : {}), ...parcial } }))
 
   const elegirDesenlace = (d: Desenlace) =>
     actualizar((c) => {
@@ -46,6 +48,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
     <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="flex min-w-0 flex-col gap-5">
         <Tarjeta id="desenlace" titulo="Desenlace de la consulta">
+          {consulta.tipoAtencion === 'catarata' && <p className="mb-3 text-sm text-fg-muted">La indicación quirúrgica y el ojo se comparten con el examen: basta registrarlos una vez.</p>}
           <fieldset disabled={soloLectura}>
             <legend className="sr-only">Desenlace</legend>
             <div className="grid gap-2 sm:grid-cols-2">
@@ -131,11 +134,18 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
           <p className="mt-2 text-[0.8125rem] text-fg-muted">Necesario para cerrar la consulta.</p>
         </Tarjeta>
 
+        <details open={consulta.desenlace === 'alta' || Boolean(cr.emitida) || undefined} className="rounded-lg border border-line bg-surface">
+          <summary className="cursor-pointer p-4 font-semibold">Contrarreferencia al establecimiento de origen{consulta.desenlace === 'alta' ? ' · recomendada al alta' : ''}</summary>
         <Tarjeta id="contrarreferencia" titulo="Contrarreferencia" accion={cr.emitida ? <Insignia tono="ok" icono={IconoCompleto}>Emitida {hora(cr.emitida)}</Insignia> : <Insignia>Sin emitir</Insignia>}>
           {soloLectura && !cr.emitida ? (
             <p className="text-sm text-fg-muted">No se emitió contrarreferencia en esta consulta.</p>
           ) : (
             <>
+              {!soloLectura && <Boton pequeno className="mb-4" onClick={() => {
+                const sugerida = sugerenciaContrarreferencia(consulta)
+                fijarCr({ conducta: cr.conducta.trim() ? cr.conducta : sugerida.conducta, controlSugerido: cr.controlSugerido.trim() ? cr.controlSugerido : sugerida.controlSugerido })
+              }}>Completar campos vacíos desde la consulta para revisar</Boton>}
+              {errores.length > 0 && <Aviso tono="error" titulo="Revise la contrarreferencia" className="mb-4"><ul className="list-disc pl-5">{errores.map((e) => <li key={e}>{e}</li>)}</ul></Aviso>}
               <fieldset disabled={soloLectura} className="grid gap-4 md:grid-cols-2">
                 <legend className="sr-only">Contrarreferencia al establecimiento de origen</legend>
                 <Campo etiqueta="Establecimiento de destino" ayuda={`La SIC vino de ${ESTABLECIMIENTOS.find((e) => e.id === sic.establecimientoId)?.nombre}.`}>
@@ -182,6 +192,9 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
                     pequeno
                     icono={IconoImprimir}
                     onClick={() => {
+                      const faltan = erroresContrarreferencia({ ...consulta, contrarreferencia: cr })
+                      setErrores(faltan)
+                      if (faltan.length) return
                       fijarCr({ emitida: marcaTiempo() })
                       registrar('Contrarreferencia')
                       setVista('contrarreferencia')
@@ -195,6 +208,9 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
           )}
         </Tarjeta>
 
+        </details>
+        <details open={Boolean(resumen.entregado) || undefined} className="rounded-lg border border-line bg-surface">
+          <summary className="cursor-pointer p-4 font-semibold">Preparar resumen para el paciente</summary>
         <Tarjeta id="resumen" titulo="Resumen para el paciente" accion={resumen.entregado ? <Insignia tono="ok" icono={IconoCompleto}>Entregado {hora(resumen.entregado)}</Insignia> : undefined}>
           {soloLectura && !resumen.texto.trim() ? (
             <p className="text-sm text-fg-muted">No se entregó resumen al paciente.</p>
@@ -208,7 +224,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
           )}
           <div className={cx('mt-4 flex flex-wrap justify-end gap-2', soloLectura && !resumen.texto.trim() && 'hidden')}>
             {!soloLectura && (
-              <Boton pequeno variante="fantasma" onClick={() => fijarResumen({ texto: resumenSugerido(consulta) })}>
+              <Boton pequeno variante="fantasma" disabled={Boolean(resumen.texto.trim())} onClick={() => fijarResumen({ texto: resumenSugerido(consulta) })}>
                 Generar desde la consulta
               </Boton>
             )}
@@ -228,6 +244,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
             </Boton>
           </div>
         </Tarjeta>
+        </details>
       </div>
 
       {/* Lista de lo que falta: el único lugar donde se exige algo (RNF-06). */}
@@ -245,7 +262,7 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
             <>
               <ListaFaltantes titulo="Necesario para cerrar" vacio="Todo lo necesario está registrado." items={bloqueos} consultaId={consulta.id} />
               <ListaFaltantes
-                titulo={`Campos obligatorios de ${plantilla.nombre.toLowerCase()}`}
+                titulo={`Campos para registro completo de ${plantilla.nombre.toLowerCase()}`}
                 nota="No impiden cerrar: si faltan, se pide confirmación y la consulta queda como incompleta."
                 vacio="Completos."
                 items={pendientes}
@@ -257,9 +274,9 @@ export function PasoCierre({ consulta, plantilla, soloLectura, actualizar, regis
               {confirmando ? (
                 <div className="mt-5 rounded-md border border-warn-line bg-warn-soft p-3" role="alertdialog" aria-labelledby="confirmar-titulo">
                   <p id="confirmar-titulo" className="font-semibold text-warn">
-                    ¿Cerrar con {pendientes.length} campos obligatorios pendientes?
+                    ¿Cerrar con {pendientes.length} campos para registro completo pendientes?
                   </p>
-                  <p className="mt-1 text-sm">La consulta queda en solo lectura y se cuenta como incompleta en el indicador de campos obligatorios.</p>
+                  <p className="mt-1 text-sm">La consulta queda en solo lectura y se cuenta como incompleta en el indicador de campos para registro completo.</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Boton pequeno variante="primario" onClick={cerrar}>
                       Cerrar igual

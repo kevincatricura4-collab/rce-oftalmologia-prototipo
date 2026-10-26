@@ -25,6 +25,18 @@ Para generar la versión estática:
 npm run build
 ```
 
+Para comprobar las reglas de emisión de documentos, sincronización de catarata y resultados
+posteriores al cierre:
+
+```bash
+npm test
+```
+
+El examen muestra primero los campos del registro completo y permite desplegar los
+adicionales. Los borradores guardados siguen disponibles. Los resultados recibidos después
+del cierre se agregan desde **Indicaciones → orden emitida → Resultados posteriores al cierre**.
+Se conserva la consulta original y cada incorporación tiene autor y fecha.
+
 ## Documentación
 
 - [Especificación del prototipo](docs/especificacion.md): roles, requerimientos, pantallas,

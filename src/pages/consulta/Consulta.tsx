@@ -146,7 +146,7 @@ export function Consulta() {
           }
         >
           Cerrada el {fechaHora(consulta.cierre!)} por {autor?.nombre}. Desenlace: {consulta.desenlace ? NOMBRE_DESENLACE[consulta.desenlace] : '—'}
-          {consulta.cerradaConPendientes > 0 && <> · se cerró con {consulta.cerradaConPendientes} campos obligatorios pendientes</>}.
+          {consulta.cerradaConPendientes > 0 && <> · se cerró con {consulta.cerradaConPendientes} campos para registro completo pendientes</>}.
         </Aviso>
       )}
 
@@ -165,7 +165,7 @@ export function Consulta() {
                 : completo
                   ? '(completo)'
                   : faltan
-                    ? `(pendiente: ${faltan === 1 ? 'falta 1 campo obligatorio' : `faltan ${faltan} campos obligatorios`})`
+                    ? `(pendiente: ${faltan === 1 ? 'falta 1 campo para registro completo' : `faltan ${faltan} campos para registro completo`})`
                     : '(pendiente)'
             return (
               <li key={p.id}>

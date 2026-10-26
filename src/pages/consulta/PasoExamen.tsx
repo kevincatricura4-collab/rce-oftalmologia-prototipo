@@ -33,12 +33,14 @@ export function PasoExamen({ consulta, cita, plantilla, soloLectura, actualizar 
           {!soloLectura && (
             <p className="text-[0.8125rem] text-fg-muted">
               {pendientes.length
-                ? `${pendientes.length === 1 ? 'Falta 1 campo obligatorio' : `Faltan ${pendientes.length} campos obligatorios`} de ${plantilla.nombre.toLowerCase()}; se revisan al cerrar`
-                : `Campos obligatorios de ${plantilla.nombre.toLowerCase()} completos`}
+                ? `${pendientes.length === 1 ? 'Falta 1 campo para registro completo' : `Faltan ${pendientes.length} campos para registro completo`} de ${plantilla.nombre.toLowerCase()}; se revisan al cerrar`
+                : `Campos para registro completo de ${plantilla.nombre.toLowerCase()} completos`}
             </p>
           )}
         </div>
+        <p className="mb-3 text-sm text-fg-muted">Complete el examen realizado. Los apartados adicionales se despliegan cuando los necesita; puede guardar el borrador en cualquier momento.</p>
         <FormularioExamen
+          key={plantilla.id}
           plantilla={plantilla}
           hallazgos={consulta.hallazgos}
           preAtencion={pa}
@@ -49,6 +51,7 @@ export function PasoExamen({ consulta, cita, plantilla, soloLectura, actualizar 
       </div>
 
       <div className="flex min-w-0 flex-col gap-5 xl:sticky xl:top-20">
+        {glaucoma && <p className="text-sm text-fg-muted">El tratamiento hipotensor actual registra lo que el paciente ya usa. Las nuevas recetas se emiten en Indicaciones.</p>}
         {glaucoma && <PanelControlesPrevios consulta={consulta} />}
         {pa ? (
           <Tarjeta titulo="Pre-atención" pie={`Registrada por ${usuarioPorId(datos, pa.autorId)?.nombre} a las ${hora(pa.fecha)}`}>

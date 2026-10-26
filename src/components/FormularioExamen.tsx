@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { camposPorGrupo, vieneDePreAtencion } from '../lib/consulta'
 import { aNumero, comaDecimal, normalizarFecha, normalizarHora } from '../lib/formato'
 import { SIN_HALLAZGOS, campoVisible } from '../lib/plantillas'
@@ -26,6 +27,7 @@ const PIO_MAXIMA_NORMAL = 21
 
 export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectura, onCambio, onVarios }: Props) {
   const grupos = camposPorGrupo(plantilla)
+  const [abiertos, setAbiertos] = useState<Record<string, boolean>>({})
   // En glaucoma la referencia es la PIO objetivo de cada ojo, no solo el límite poblacional de 21 mmHg.
   const usaPioObjetivo = plantilla.campos.some((c) => c.id === 'gl_pio_objetivo')
 
@@ -53,6 +55,13 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
         </thead>
         {grupos.map(({ grupo, campos }) => {
           const visibles = campos.filter((c) => campoVisible(c, hallazgos))
+          const principal = visibles.some((c) => c.obligatorio) || grupo.nombre === 'Agudeza visual' || grupo.nombre === 'Presión intraocular'
+          const tieneDatos = visibles.some((c) => Object.values(hallazgos[c.id] ?? {}).some(Boolean))
+          const abierto = principal || (abiertos[grupo.nombre] ?? false)
+          const basicos = visibles.filter((c) => c.obligatorio || ['av_cc', 'gl_pio_objetivo', 'gl_campo_visual'].includes(c.id))
+          const adicionales = principal ? visibles.filter((c) => !basicos.includes(c)) : []
+          const mostrarAdicionales = abiertos[`${grupo.nombre}-adicionales`] ?? false
+          const camposMostrados = principal && !mostrarAdicionales ? basicos : visibles
           const porOjo = visibles.filter((c) => c.lateralidad === 'por_ojo')
           const deTexto = porOjo.filter((c) => c.tipo === 'texto')
           const sinHallazgosEn = (ojo: Ojo) => deTexto.length > 0 && deTexto.every((c) => hallazgos[c.id]?.[ojo] === SIN_HALLAZGOS)
@@ -60,12 +69,21 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
           const copiables = grupo.copiarOdOi ? porOjo.filter((c) => hallazgos[c.id]?.OD) : []
 
           return (
-            <tbody key={grupo.nombre} className="border-b border-line last:border-b-0 max-sm:block">
+            <tbody key={grupo.nombre} id={`grupo-${plantilla.id}-${grupo.nombre.replaceAll(' ', '-')}`} className="border-b border-line last:border-b-0 max-sm:block">
               <tr className="bg-canvas/60 max-sm:grid max-sm:grid-cols-2">
                 <th scope="colgroup" className="px-3 pt-3 pb-1.5 max-sm:col-span-2 sm:px-4">
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span className="font-display text-[0.9375rem] font-semibold">{grupo.nombre}</span>
-                    {!soloLectura && copiables.length > 0 && (
+                    {principal ? (
+                      <span className="font-display text-[0.9375rem] font-semibold">{grupo.nombre}</span>
+                    ) : (
+                      <button type="button" aria-expanded={abierto} aria-controls={`grupo-${plantilla.id}-${grupo.nombre.replaceAll(' ', '-')}`} className="min-h-10 text-left font-semibold text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [grupo.nombre]: !abierto }))}>
+                        {abierto ? 'Ocultar' : 'Mostrar'} {grupo.nombre.toLowerCase()} · adicional{tieneDatos ? ' · con datos' : ''}
+                      </button>
+                    )}
+                    {adicionales.length > 0 && <button type="button" aria-label={`${mostrarAdicionales ? 'Ocultar' : 'Mostrar'} adicionales de ${grupo.nombre}`} aria-expanded={mostrarAdicionales} className="min-h-8 text-left text-[0.8125rem] font-medium text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [`${grupo.nombre}-adicionales`]: !mostrarAdicionales }))}>
+                      {mostrarAdicionales ? 'Ocultar adicionales' : `Mostrar adicionales (${adicionales.length})`}
+                    </button>}
+                    {abierto && !soloLectura && copiables.length > 0 && (
                       <button
                         type="button"
                         onClick={() => onVarios(copiables.map((c) => ({ campoId: c.id, lado: 'OI', valor: hallazgos[c.id]!.OD! })))}
@@ -78,7 +96,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                     )}
                   </span>
                 </th>
-                {grupo.sinHallazgos && deTexto.length > 0 && !soloLectura ? (
+                {abierto && grupo.sinHallazgos && deTexto.length > 0 && !soloLectura ? (
                   // Casilla y no botón: un botón con el texto "Sin hallazgos" se confundía con un campo ya
                   // llenado con ese valor. En solo lectura no se muestra: los campos ya dicen lo registrado.
                   OJOS.map((ojo) => {
@@ -101,7 +119,7 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                   <td colSpan={2} className="max-sm:hidden" />
                 )}
               </tr>
-              {visibles.map((campo) => (
+              {abierto && camposMostrados.map((campo) => (
                 <FilaCampo key={campo.id} campo={campo} hallazgos={hallazgos} preAtencion={preAtencion} soloLectura={soloLectura} usaPioObjetivo={usaPioObjetivo} onCambio={onCambio} />
               ))}
             </tbody>
@@ -128,6 +146,7 @@ function FilaCampo({ campo, hallazgos, preAtencion, soloLectura, usaPioObjetivo,
     <tr className="border-t border-line/70 max-sm:grid max-sm:grid-cols-2">
       <th scope="row" className="px-3 py-1.5 align-middle font-normal max-sm:col-span-2 max-sm:pb-0 sm:px-4">
         <span className="text-[0.9375rem]">{campo.etiqueta}</span>
+        <span className="block text-[0.8125rem] text-fg-muted">{campo.obligatorio ? 'Registro completo' : 'Opcional'}</span>
         {campo.unidad && <span className="text-fg-muted"> ({campo.unidad})</span>}
         {origen && <span className="ml-2 inline-block text-[0.8125rem] text-fg-muted">{origen}</span>}
         {campo.personalizado && <span className="ml-2 inline-block text-[0.8125rem] text-fg-muted">campo agregado por configuración</span>}

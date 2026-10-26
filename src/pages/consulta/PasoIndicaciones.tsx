@@ -1,7 +1,9 @@
 import { useState, type ReactNode } from 'react'
 import { DialogoDocumento, HojaDocumento } from '../../components/Documento'
 import { IconoAgregar, IconoCompleto, IconoImprimir, IconoOrdenExamen, IconoQuitar, IconoRecetaMedicamentos, IconoRecetaOptica, IconoTraerDelExamen } from '../../components/iconos'
-import { Boton, Campo, Entrada, Insignia, Segmentado, Seleccion, Tarjeta, claseEntrada, cx } from '../../components/ui'
+import { Aviso, Boton, Campo, Entrada, Insignia, Segmentado, Seleccion, Tarjeta, claseEntrada, cx } from '../../components/ui'
+import { erroresMedicamentos, erroresOptica, erroresOrden } from '../../lib/documentos'
+import { ResultadosPosteriores } from './ResultadosPosteriores'
 import { DURACIONES, FRECUENCIAS } from '../../lib/catalogos'
 import { hora, marcaTiempo, nuevoId } from '../../lib/formato'
 import { useEstado } from '../../lib/store'
@@ -36,12 +38,16 @@ function Emitido({ fecha }: { fecha: string | null }) {
 export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar }: PropsPaso) {
   const { datos } = useEstado()
   const [vista, setVista] = useState<Vista>(null)
+  const [errores, setErrores] = useState<string[]>([])
+  const [mostrarMedicamentos, setMostrarMedicamentos] = useState(false)
+  const [mostrarOrdenes, setMostrarOrdenes] = useState(false)
   const ro = consulta.recetaOptica
   const meds = consulta.recetasMedicamento
   const ordenes = consulta.ordenesExamen
+  const tratamientoActual = (['OD', 'OI'] as Ojo[]).filter((o) => consulta.hallazgos.gl_hipotensor?.[o]?.trim())
 
   // ---- Receta óptica ----
-  const fijarOptica = (cambio: (r: RecetaOptica) => RecetaOptica) => actualizar((c) => ({ ...c, recetaOptica: cambio(c.recetaOptica ?? recetaVacia()) }))
+  const fijarOptica = (cambio: (r: RecetaOptica) => RecetaOptica) => actualizar((c) => ({ ...c, recetaOptica: { ...cambio(c.recetaOptica ?? recetaVacia()), emitida: null } }))
   const desdeRefraccion = () =>
     fijarOptica((r) => {
       const h = consulta.hallazgos
@@ -57,19 +63,24 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
 
   // ---- Medicamentos ----
   const fijarMeds = (lista: RecetaMedicamento[]) => actualizar((c) => ({ ...c, recetasMedicamento: lista }))
-  const editarMed = (id: string, parcial: Partial<RecetaMedicamento>) => fijarMeds(meds.map((m) => (m.id === id ? { ...m, ...parcial } : m)))
+  const editarMed = (id: string, parcial: Partial<RecetaMedicamento>) => fijarMeds(meds.map((m) => ({ ...(m.id === id ? { ...m, ...parcial } : m), emitida: null })))
 
   // ---- Órdenes ----
   const fijarOrdenes = (lista: OrdenExamen[]) => actualizar((c) => ({ ...c, ordenesExamen: lista }))
-  const editarOrden = (id: string, parcial: Partial<OrdenExamen>) => fijarOrdenes(ordenes.map((o) => (o.id === id ? { ...o, ...parcial } : o)))
+  const editarOrden = (id: string, parcial: Partial<OrdenExamen>) => fijarOrdenes(ordenes.map((o) => (o.id === id ? { ...o, ...parcial, ...(('examen' in parcial || 'ojo' in parcial || 'indicacion' in parcial) ? { emitida: null } : {}) } : o)))
 
   const emitir = (v: NonNullable<Vista>) => {
+    if (soloLectura) return
+    const orden = v.tipo === 'orden' ? ordenes.find((o) => o.id === v.id) : null
+    const faltan = v.tipo === 'optica' ? erroresOptica(ro) : v.tipo === 'medicamentos' ? erroresMedicamentos(meds) : orden ? erroresOrden(orden) : ['No se encontró la orden.']
+    setErrores(faltan)
+    if (faltan.length) return
     const ahora = marcaTiempo()
     if (v.tipo === 'optica') {
-      fijarOptica((r) => ({ ...r, emitida: ahora }))
+      actualizar((c) => ({ ...c, recetaOptica: { ...c.recetaOptica!, emitida: ahora }, indicacionTratamiento: true }))
       registrar('Receta óptica')
     } else if (v.tipo === 'medicamentos') {
-      fijarMeds(meds.map((m) => ({ ...m, emitida: ahora })))
+      actualizar((c) => ({ ...c, recetasMedicamento: c.recetasMedicamento.map((m) => ({ ...m, emitida: ahora })), indicacionTratamiento: true }))
       registrar('Receta de medicamentos')
     } else {
       editarOrden(v.id, { emitida: ahora })
@@ -82,6 +93,8 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
 
   return (
     <div className="flex flex-col gap-5">
+      {errores.length > 0 && <Aviso tono="error" titulo="Revise el documento antes de emitir"><ul className="list-disc pl-5">{errores.map((e) => <li key={e}>{e}</li>)}</ul></Aviso>}
+      {!soloLectura && <p className="text-sm text-fg-muted">Agregue solo los documentos que correspondan. Al emitir una receta se registra que hubo indicación de tratamiento.</p>}
       {/* Receta óptica */}
       <Tarjeta
         id="receta-optica"
@@ -154,6 +167,12 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
         {ro && <AccionesDocumento emitida={ro.emitida} soloLectura={soloLectura} onEmitir={() => emitir({ tipo: 'optica' })} onVer={() => setVista({ tipo: 'optica' })} onQuitar={() => actualizar((c) => ({ ...c, recetaOptica: null }))} />}
       </Tarjeta>
 
+      {!soloLectura && meds.length === 0 && !mostrarMedicamentos && <Boton className="self-start" icono={IconoAgregar} onClick={() => { setMostrarMedicamentos(true); fijarMeds([{ id: nuevoId('m'), farmaco: '', dosis: '1 gota', frecuencia: '', duracion: '', ojo: null, emitida: null }]) }}>Agregar receta de medicamentos</Boton>}
+      {!soloLectura && consulta.tipoAtencion === 'glaucoma' && meds.length === 0 && tratamientoActual.length > 0 && <Boton className="self-start" variante="fantasma" onClick={() => {
+        setMostrarMedicamentos(true)
+        fijarMeds(tratamientoActual.map((ojo) => ({ id: nuevoId('m'), farmaco: consulta.hallazgos.gl_hipotensor[ojo] ?? '', dosis: '', frecuencia: FRECUENCIAS.includes(consulta.hallazgos.gl_posologia?.[ojo] ?? '') ? consulta.hallazgos.gl_posologia[ojo]! : '', duracion: '', ojo, emitida: null })))
+      }}>Usar tratamiento actual como borrador de receta</Boton>}
+      {(meds.length > 0 || mostrarMedicamentos) && <>
       {/* Medicamentos */}
       <Tarjeta
         id="receta-med"
@@ -170,6 +189,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                   {(p) => (
                     <Seleccion {...p} value={m.farmaco} onChange={(e) => editarMed(m.id, { farmaco: e.target.value })}>
                       <option value="">Elegir…</option>
+                      {m.farmaco && !datos.catalogos.farmacos.includes(m.farmaco) && <option>{m.farmaco}</option>}
                       {datos.catalogos.farmacos.map((f) => (
                         <option key={f}>{f}</option>
                       ))}
@@ -198,6 +218,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                   )}
                 </Campo>
                 <div className="flex flex-wrap items-end justify-between gap-3 md:col-span-2 lg:col-span-4">
+                  {consulta.tipoAtencion === 'glaucoma' && m.ojo && m.ojo !== 'AO' && consulta.hallazgos.gl_posologia?.[m.ojo] && <p className="w-full text-sm text-fg-muted">Posología en uso ({m.ojo}): {consulta.hallazgos.gl_posologia[m.ojo]}. Revise dosis, frecuencia y duración de la nueva receta.</p>}
                   <Segmentado pequeno nombre={`ojo-${m.id}`} etiqueta="Ojo" valor={m.ojo} disabled={soloLectura} onCambio={(v) => editarMed(m.id, { ojo: v })} opciones={OPCIONES_OJO} />
                   {!soloLectura && (
                     <Boton pequeno variante="peligro" icono={IconoQuitar} onClick={() => fijarMeds(meds.filter((x) => x.id !== m.id))}>
@@ -219,6 +240,9 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
         )}
       </Tarjeta>
 
+      </>}
+      {!soloLectura && ordenes.length === 0 && !mostrarOrdenes && <Boton className="self-start" icono={IconoAgregar} onClick={() => { setMostrarOrdenes(true); fijarOrdenes([{ id: nuevoId('o'), examen: '', ojo: null, indicacion: '', estado: 'Emitida', referenciaResultado: '', emitida: null }]) }}>Agregar examen de apoyo</Boton>}
+      {(ordenes.length > 0 || mostrarOrdenes) && <>
       {/* Órdenes de examen */}
       <Tarjeta id="ordenes" titulo={<span className="inline-flex items-center gap-2"><IconoOrdenExamen size={16} className="text-fg-muted" aria-hidden="true" />Orden de examen de apoyo</span>}>
         {ordenes.length === 0 && <p className="text-sm text-fg-muted">{soloLectura ? 'No se ordenaron exámenes.' : 'Sin exámenes ordenados.'}</p>}
@@ -249,7 +273,7 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                   <Segmentado<EstadoOrden>
                     pequeno
                     nombre={`estado-${o.id}`}
-                    etiqueta="Estado"
+                    etiqueta={soloLectura ? 'Estado al cierre' : 'Estado'}
                     valor={o.estado}
                     disabled={soloLectura}
                     onCambio={(v) => editarOrden(o.id, { estado: v })}
@@ -258,11 +282,12 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
                       { valor: 'Resultado recibido', texto: 'Resultado recibido' },
                     ]}
                   />
-                  <Campo etiqueta="Dónde quedó el resultado" ayuda="El módulo no guarda imágenes: solo la referencia.">
+                  <Campo etiqueta={soloLectura ? 'Referencia del resultado al cierre' : 'Dónde quedó el resultado'} ayuda="El módulo no guarda imágenes: solo la referencia.">
                     {(p) => <Entrada {...p} disabled={soloLectura} value={o.referenciaResultado} placeholder="Ej.: equipo OCT sala 3, informe en ficha papel" onChange={(e) => editarOrden(o.id, { referenciaResultado: e.target.value })} />}
                   </Campo>
                 </div>
               )}
+              {soloLectura && o.emitida && <ResultadosPosteriores consulta={consulta} orden={o} />}
               <AccionesDocumento emitida={o.emitida} soloLectura={soloLectura} onEmitir={() => emitir({ tipo: 'orden', id: o.id })} onVer={() => setVista({ tipo: 'orden', id: o.id })} onQuitar={o.emitida ? undefined : () => fijarOrdenes(ordenes.filter((x) => x.id !== o.id))} deshabilitar={!o.examen} />
             </li>
           ))}
@@ -273,6 +298,8 @@ export function PasoIndicaciones({ consulta, soloLectura, actualizar, registrar 
           </Boton>
         )}
       </Tarjeta>
+
+      </>}
 
       <DialogoDocumento abierto={vista !== null} onCerrar={() => setVista(null)} titulo="Vista previa del documento">
         {vista?.tipo === 'optica' && ro && (
