@@ -1,5 +1,6 @@
+import { Checkbox } from '@blueprintjs/core'
 import { TarjetaSic } from '../../components/TarjetaSic'
-import { AreaTexto, Campo, Entrada, Tarjeta } from '../../components/ui'
+import { AreaTexto, Boton, Campo, Entrada, Tarjeta } from '../../components/ui'
 import { ANTECEDENTES_SISTEMICOS } from '../../lib/catalogos'
 import { sic as buscarSic } from '../../lib/datos'
 import type { Anamnesis } from '../../lib/tipos'
@@ -21,7 +22,10 @@ export function PasoAnamnesis({ consulta, soloLectura, actualizar }: PropsPaso) 
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <TarjetaSic sic={sic} />
+      <details className="self-start rounded-lg border border-line bg-surface">
+        <summary className="cursor-pointer p-4 font-semibold">Ver interconsulta de origen (SIC)</summary>
+        <TarjetaSic sic={sic} />
+      </details>
 
       <Tarjeta id="anamnesis" titulo="Anamnesis">
         <fieldset disabled={soloLectura} className="flex flex-col gap-4">
@@ -37,10 +41,7 @@ export function PasoAnamnesis({ consulta, soloLectura, actualizar }: PropsPaso) 
             <legend className="mb-1 text-[0.8125rem] font-medium text-fg-muted">Antecedentes sistémicos</legend>
             <div className="flex flex-wrap gap-x-5 gap-y-2">
               {ANTECEDENTES_SISTEMICOS.map((o) => (
-                <label key={o} className="inline-flex min-h-10 items-center gap-2">
-                  <input type="checkbox" className="size-4 accent-primary" checked={a.antecedentesSistemicos.includes(o)} onChange={(e) => alternarAntecedente(o, e.target.checked)} />
-                  {o}
-                </label>
+                <Checkbox  key={o} className="inline-flex min-h-10 items-center gap-2"   checked={a.antecedentesSistemicos.includes(o)} onChange={(e) => alternarAntecedente(o, e.target.checked)} labelElement={<>{o}</>} />
               ))}
             </div>
             {sic.diabetes !== null && (
@@ -53,6 +54,9 @@ export function PasoAnamnesis({ consulta, soloLectura, actualizar }: PropsPaso) 
             </Campo>
           )}
 
+          {sic.farmacos && !a.farmacos.trim() && !soloLectura && (
+            <Boton pequeno onClick={() => cambiar({ farmacos: sic.farmacos ?? '' })}>Incorporar fármacos desde SIC para revisar</Boton>
+          )}
           <Campo etiqueta="Fármacos en uso" ayuda={sic.farmacos ? `Desde SIC: ${sic.farmacos}` : undefined}>
             {(p) => <AreaTexto {...p} rows={2} value={a.farmacos} onChange={(e) => cambiar({ farmacos: e.target.value })} />}
           </Campo>

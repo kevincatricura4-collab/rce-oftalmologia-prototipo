@@ -17,7 +17,7 @@ prueba y sin backend.
 
 ## Stack y comandos
 
-React 19 + TypeScript + Vite + Tailwind CSS v4. Enrutado con `react-router-dom` (HashRouter).
+React 19 + TypeScript + Vite + Blueprint 6.21.0 + Tailwind CSS v4 (layout). Enrutado con `react-router-dom` (HashRouter).
 Íconos IBM Carbon copiados en `src/components/iconos.tsx` (generado por `scripts/generar-iconos.mjs`;
 no instalar `@carbon/icons-react`, que envía métricas a IBM). Fuentes Figtree y Noto Sans
 empaquetadas con Fontsource.
@@ -71,7 +71,7 @@ docs/                 especificación y figuras de referencia
 ## UI UX Pro Max
 
 El skill está en `.claude/skills/ui-ux-pro-max/` (copiado del paquete MIT
-`nextlevelbuilder/ui-ux-pro-max-skill`). El sistema de diseño ya está generado y guardado en
+`nextlevelbuilder/ui-ux-pro-max-skill`). El sistema de diseño vigente se migró a Blueprint por solicitud del usuario y está guardado en
 `design-system/MASTER.md`; **no regenerarlo**, construir con él. Usar el skill para consultas
 puntuales (gráficos, guías UX, reglas del stack) antes de diseñar algo nuevo:
 
@@ -128,3 +128,10 @@ Pendiente: revisión de Kevin y de un oftalmólogo; pruebas de usabilidad con el
 ## Git
 
 Trabajar en rama y abrir pull request hacia `main`. Commits en español, en imperativo corto.
+
+## Diseño Blueprint
+
+La interfaz usa los componentes Blueprint 6.21.0 y los adaptadores de `components/ui.tsx`.
+Leer el MASTER vigente; las decisiones visuales anteriores a esta migración quedan sustituidas.
+No volver a introducir controles HTML con estilos paralelos. Mantener los tokens clínicos,
+las columnas OD/OI y las reglas de impresión de `src/blueprint.css`.

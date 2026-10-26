@@ -1,9 +1,10 @@
+import { Tab, Tabs } from '@blueprintjs/core'
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, Navigate, NavLink, useNavigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../../components/EncabezadoPaciente'
 import { IconoAvanzar, IconoCompleto, IconoGuardar, IconoSoloLectura, IconoVolver } from '../../components/iconos'
 import { useTituloPagina } from '../../components/Layout'
-import { Aviso, Boton, Segmentado, cx } from '../../components/ui'
+import { Aviso, Boton, Segmentado } from '../../components/ui'
 import { NOMBRE_DESENLACE } from '../../lib/catalogos'
 import { bloqueosCierre, camposPendientes, estadoCita } from '../../lib/consulta'
 import { paciente as buscarPaciente } from '../../lib/datos'
@@ -146,57 +147,24 @@ export function Consulta() {
           }
         >
           Cerrada el {fechaHora(consulta.cierre!)} por {autor?.nombre}. Desenlace: {consulta.desenlace ? NOMBRE_DESENLACE[consulta.desenlace] : '—'}
-          {consulta.cerradaConPendientes > 0 && <> · se cerró con {consulta.cerradaConPendientes} campos obligatorios pendientes</>}.
+          {consulta.cerradaConPendientes > 0 && <> · se cerró con {consulta.cerradaConPendientes} campos para registro completo pendientes</>}.
         </Aviso>
       )}
 
-      <nav aria-label="Pasos de la consulta" className="relative mb-6 overflow-x-auto border-b border-line">
-        <ol className="flex max-sm:flex-wrap sm:min-w-max">
-          {PASOS.map((p) => {
-            const completo = pasoCompleto(p.id, consulta, plantilla)
-            const docs = p.id === 'indicaciones' ? documentosEmitidos(consulta) : 0
-            const faltan = p.id === 'examen' && !completo ? camposPendientes(plantilla, consulta.hallazgos).length : 0
-            const detalle = p.id === 'indicaciones' ? (docs ? `${docs} doc.` : 'opcional') : faltan ? `faltan ${faltan}` : null
-            const lector =
-              p.id === 'indicaciones'
-                ? docs
-                  ? `(${docs} ${docs === 1 ? 'documento emitido' : 'documentos emitidos'})`
-                  : '(opcional, sin documentos)'
-                : completo
-                  ? '(completo)'
-                  : faltan
-                    ? `(pendiente: ${faltan === 1 ? 'falta 1 campo obligatorio' : `faltan ${faltan} campos obligatorios`})`
-                    : '(pendiente)'
-            return (
-              <li key={p.id}>
-                <NavLink
-                  to={`/consulta/${consulta.id}/${p.id}`}
-                  className={({ isActive }) =>
-                    cx(
-                      '-mb-px flex h-12 items-center gap-2 border-b-[3px] px-3 text-[0.9375rem] font-medium transition-colors duration-150 focus-visible:outline-offset-[-3px] sm:px-4',
-                      isActive ? 'border-primary text-fg font-semibold' : 'border-transparent text-fg-muted hover:text-fg hover:bg-muted',
-                    )
-                  }
-                >
-                  {/* Solo el paso terminado lleva ícono; el resto dice qué le falta en texto, sin el anillo de "en espera". */}
-                  {completo && p.id !== 'indicaciones' && <IconoCompleto size={16} className="shrink-0 text-ok" aria-hidden="true" />}
-                  <span>
-                    {p.numero} {p.nombre}
-                  </span>
-                  {detalle && (
-                    <span className="tnum text-[0.8125rem] font-normal text-fg-muted" aria-hidden="true">
-                      {detalle}
-                    </span>
-                  )}
-                  <span className="sr-only">{lector}</span>
-                </NavLink>
-              </li>
-            )
-          })}
-        </ol>
-      </nav>
-
-      <Componente key={pasoActual.id} {...props} />
+      <Tabs id={`consulta-${consulta.id}`} selectedTabId={pasoActual.id} onChange={(id) => navegar(`/consulta/${consulta.id}/${id}`)} animate={false} renderActiveTabPanelOnly className="rce-consulta-tabs">
+        {PASOS.map((p) => {
+          const completo = pasoCompleto(p.id, consulta, plantilla)
+          const docs = p.id === 'indicaciones' ? documentosEmitidos(consulta) : 0
+          const faltan = p.id === 'examen' ? camposPendientes(plantilla, consulta.hallazgos).length : 0
+          return <Tab key={p.id} id={p.id} title={<span className="inline-flex items-center gap-2">
+            {completo && p.id !== 'indicaciones' && <IconoCompleto size={16} className="text-ok" aria-hidden="true" />}
+            <span>{p.numero} {p.nombre}</span>
+            {p.id === 'indicaciones' && <span className="text-[0.8125rem] text-fg-muted">{docs ? `${docs} doc.` : 'opcional'}</span>}
+            {faltan > 0 && <span className="text-[0.8125rem] text-fg-muted">faltan {faltan}</span>}
+            <span className="sr-only">{completo ? 'completo' : 'pendiente'}</span>
+          </span>} panel={<Componente key={p.id} {...props} />} />
+        })}
+      </Tabs>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
         <p className="text-[0.8125rem] text-fg-muted">

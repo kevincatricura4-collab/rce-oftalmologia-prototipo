@@ -18,7 +18,7 @@ const G = {
   cristalino: 'Cristalino',
   funcion: 'Repercusión funcional',
   decision: 'Decisión',
-  tratamiento: 'Tratamiento hipotensor',
+  tratamiento: 'Tratamiento hipotensor actual',
   evolucion: 'Evolución',
 } as const
 
@@ -121,7 +121,7 @@ export const PLANTILLAS_INICIALES: Record<TipoAtencionId, Plantilla> = {
       ...BIOMICROSCOPIA,
       ...FONDO,
       ...REFRACCION,
-      { id: 'gl_hipotensor', etiqueta: 'Fármaco', grupo: G.tratamiento, lateralidad: 'por_ojo', tipo: 'texto' },
+      { id: 'gl_hipotensor', etiqueta: 'Fármaco en uso', grupo: G.tratamiento, lateralidad: 'por_ojo', tipo: 'texto' },
       { id: 'gl_posologia', etiqueta: 'Posología', grupo: G.tratamiento, lateralidad: 'por_ojo', tipo: 'texto' },
       { id: 'gl_inicio', etiqueta: 'Fecha de inicio', grupo: G.tratamiento, lateralidad: 'por_ojo', tipo: 'fecha' },
       { id: 'gl_progresion', etiqueta: 'Progresión', grupo: G.evolucion, lateralidad: 'AO', tipo: 'opcion', opciones: ['Estable', 'Progresa', 'No evaluable'], obligatorio: true },

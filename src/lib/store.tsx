@@ -6,6 +6,7 @@ import { marcaTiempo, nuevoId } from './formato'
 import { PLANTILLAS_INICIALES } from './plantillas'
 import type { Catalogos, Cita, Consulta, EventoAuditoria, Plantilla, PreAtencion, TipoAtencionId, Usuario } from './tipos'
 import { USUARIOS_INICIALES } from './usuarios'
+import { anexarResultado, sincronizarDecision } from './seguimiento'
 
 // Estado del prototipo. En el sistema final esto vive en el backend (FastAPI + PostgreSQL);
 // aquí se guarda en el navegador para que el recorrido sobreviva a una recarga, y se puede
@@ -34,6 +35,7 @@ interface Estado {
   abrirConsulta: (citaId: string) => string
   actualizarConsulta: (consultaId: string, cambio: (c: Consulta) => Consulta) => void
   registrarBloque: (consultaId: string, bloque: string) => void
+  registrarResultado: (consultaId: string, ordenId: string, referencia: string) => void
   cerrarConsulta: (consultaId: string, pendientes: number) => void
   auditar: (accion: string, detalle: string) => void
   guardarUsuario: (usuario: Usuario) => void
@@ -59,6 +61,15 @@ function datosIniciales(): Datos {
     catalogos: structuredClone(CATALOGOS_INICIALES),
     auditoria: [],
   }
+}
+
+function migrarDatos(datos: Datos): Datos {
+  const plantilla = datos.plantillas.glaucoma
+  const antiguo = 'Tratamiento hipotensor'
+  return { ...datos, plantillas: { ...datos.plantillas, glaucoma: { ...plantilla,
+    grupos: plantilla.grupos.map((g) => g.nombre === antiguo ? { ...g, nombre: 'Tratamiento hipotensor actual' } : g),
+    campos: plantilla.campos.map((c) => c.grupo === antiguo ? { ...c, grupo: 'Tratamiento hipotensor actual', etiqueta: c.id === 'gl_hipotensor' ? 'Fármaco en uso' : c.etiqueta } : c),
+  } } }
 }
 
 function leer<T>(almacen: () => Storage, clave: string): T | null {
@@ -89,11 +100,12 @@ function temaInicial(): Tema {
 
 export function ProveedorEstado({ children }: { children: ReactNode }) {
   const [tema, setTema] = useState<Tema>(temaInicial)
-  const [datos, setDatos] = useState<Datos>(() => leer<Datos>(local, CLAVE_DATOS) ?? datosIniciales())
+  const [datos, setDatos] = useState<Datos>(() => migrarDatos(leer<Datos>(local, CLAVE_DATOS) ?? datosIniciales()))
   const [usuarioId, setUsuarioId] = useState<string | null>(() => leer<string>(sesion, CLAVE_SESION))
 
   useEffect(() => {
     document.documentElement.dataset.theme = tema === 'oscuro' ? 'dark' : 'light'
+    document.documentElement.classList.toggle('bp6-dark', tema === 'oscuro')
     escribir(local, CLAVE_TEMA, tema)
   }, [tema])
 
@@ -126,7 +138,7 @@ export function ProveedorEstado({ children }: { children: ReactNode }) {
         const actual = d.consultas[consultaId]
         // Una consulta cerrada queda en solo lectura (RNF-08).
         if (!actual || actual.estado === 'cerrada') return d
-        return { ...d, consultas: { ...d.consultas, [consultaId]: cambio(actual) } }
+        return { ...d, consultas: { ...d.consultas, [consultaId]: sincronizarDecision(actual, cambio(actual)) } }
       })
 
     return {
@@ -186,6 +198,16 @@ export function ProveedorEstado({ children }: { children: ReactNode }) {
       },
 
       actualizarConsulta,
+
+      registrarResultado: (consultaId, ordenId, referencia) =>
+        setDatos((d) => {
+          if (d.usuarios.find((u) => u.id === autor && u.activo)?.rol !== 'oftalmologo') return d
+          const actual = d.consultas[consultaId]
+          if (!actual) return d
+          const nueva = anexarResultado(actual, { id: nuevoId('resultado'), ordenId, referencia, autorId: autor, fecha: marcaTiempo() })
+          if (nueva === actual) return d
+          return { ...d, consultas: { ...d.consultas, [consultaId]: nueva }, auditoria: [evento('Resultado posterior al cierre', `Consulta ${consultaId}, orden ${ordenId}`), ...d.auditoria] }
+        }),
 
       registrarBloque: (consultaId, bloque) =>
         actualizarConsulta(consultaId, (c) => ({ ...c, registros: [...c.registros, { bloque, autorId: autor, fecha: marcaTiempo() }] })),

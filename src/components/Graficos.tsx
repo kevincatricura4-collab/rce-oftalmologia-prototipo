@@ -1,3 +1,4 @@
+import { HTMLTable } from '@blueprintjs/core'
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { cx } from './ui'
 
@@ -145,7 +146,7 @@ export function TablaDatos({ titulo, columnas, filas }: { titulo: string; column
     <details className="mt-3 text-sm">
       <summary className="inline-flex min-h-8 items-center font-medium text-primary">Ver como tabla</summary>
       <div className="relative mt-2 overflow-x-auto">
-        <table className="w-full border-collapse">
+        <HTMLTable className="w-full border-collapse">
           <caption className="sr-only">{titulo}</caption>
           <thead>
             <tr className="border-b border-line">
@@ -173,7 +174,7 @@ export function TablaDatos({ titulo, columnas, filas }: { titulo: string; column
               </tr>
             ))}
           </tbody>
-        </table>
+        </HTMLTable>
       </div>
     </details>
   )

@@ -1,3 +1,4 @@
+import { HTMLTable } from '@blueprintjs/core'
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../components/EncabezadoPaciente'
@@ -87,7 +88,7 @@ export function PreAtencion() {
               </Aviso>
             )}
             <div className="relative overflow-x-auto">
-              <table className="w-full min-w-[30rem] border-collapse">
+              <HTMLTable className="w-full min-w-[30rem] border-collapse">
                 <caption className="sr-only">Agudeza visual y PIO. Columnas: ojo derecho (OD) y ojo izquierdo (OI).</caption>
                 <thead>
                   <tr className="border-b border-line bg-muted text-sm">
@@ -113,7 +114,7 @@ export function PreAtencion() {
                           const pioAlta = f.clave === 'pio' && (aNumero(pa.pio[o]) ?? 0) > 21
                           return (
                             <td key={o} className="px-2 py-2 align-top">
-                              <input
+                              <Entrada
                                 aria-label={`${f.etiqueta}, ${o === 'OD' ? 'ojo derecho (OD)' : 'ojo izquierdo (OI)'}`}
                                 inputMode={f.decimal ? 'decimal' : 'numeric'}
                                 value={pa[f.clave][o]}
@@ -129,7 +130,7 @@ export function PreAtencion() {
                     )
                   })}
                 </tbody>
-              </table>
+              </HTMLTable>
             </div>
 
             <div className="mt-5 grid gap-4 md:grid-cols-[1fr_9rem]">

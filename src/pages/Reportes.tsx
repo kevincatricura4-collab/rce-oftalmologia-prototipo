@@ -1,3 +1,4 @@
+import { Card } from '@blueprintjs/core'
 import { useMemo, useState } from 'react'
 import { BarrasHorizontales, GraficoLinea, TablaDatos } from '../components/Graficos'
 import { IconoCompleto, IconoDatosPrueba, IconoFaltante } from '../components/iconos'
@@ -50,7 +51,7 @@ export function Reportes() {
           const enMeta = serie[ind.mesMeta]
           const cumple = enMeta.pct >= ind.meta
           return (
-            <section key={ind.id} aria-labelledby={`ind-${ind.id}`} className="flex min-w-0 flex-col rounded-lg border border-line bg-surface p-4 sm:p-5">
+            <Card role="region" key={ind.id} aria-labelledby={`ind-${ind.id}`} className="flex min-w-0 flex-col rounded-lg border border-line bg-surface p-4 sm:p-5">
               <h3 id={`ind-${ind.id}`} className="text-[0.9375rem] font-semibold">
                 {ind.corto}
               </h3>
@@ -84,7 +85,7 @@ export function Reportes() {
                 columnas={['Mes', 'Numerador', 'Denominador', '%']}
                 filas={serie.map((v, i) => [mesAnio(`${MESES_OPERACION[i]}-01`), v.num, v.den, pct(v.pct)])}
               />
-            </section>
+            </Card>
           )
         })}
       </div>

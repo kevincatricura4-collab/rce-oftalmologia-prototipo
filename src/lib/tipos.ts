@@ -216,6 +216,15 @@ export interface RegistroAutoria {
   fecha: string
 }
 
+/** Incorporación posterior al cierre, sin modificar la orden original. */
+export interface ResultadoExamen {
+  id: string
+  ordenId: string
+  referencia: string
+  autorId: string
+  fecha: string
+}
+
 /** consulta (Encounter) */
 export interface Consulta {
   id: string
@@ -233,6 +242,7 @@ export interface Consulta {
   recetaOptica: RecetaOptica | null
   recetasMedicamento: RecetaMedicamento[]
   ordenesExamen: OrdenExamen[]
+  resultadosExamen?: ResultadoExamen[]
   desenlace: Desenlace | null
   plazoControl: string
   examenPendiente: string

@@ -1,10 +1,12 @@
+import { Entrada } from '../components/ui'
+import { HTMLTable } from '@blueprintjs/core'
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import { EncabezadoPaciente } from '../components/EncabezadoPaciente'
 import { GraficoLinea, TablaDatos } from '../components/Graficos'
 import { IconoAbrirFila, IconoAvanzar, IconoBuscar, IconoEnAtencion } from '../components/iconos'
 import { TituloPantalla, useTituloPagina } from '../components/Layout'
-import { Aviso, Insignia, Tarjeta, claseEntrada, cx } from '../components/ui'
+import { Aviso, Insignia, Tarjeta, claseEntrada } from '../components/ui'
 import { NOMBRE_DESENLACE } from '../lib/catalogos'
 import { PACIENTES, SICS } from '../lib/datos'
 import { aNumero, documento, edad, fecha, mesAnio } from '../lib/formato'
@@ -28,8 +30,7 @@ export function ListaHistorial() {
         Buscar paciente
       </label>
       <div className="relative mt-1 mb-4">
-        <IconoBuscar size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted" aria-hidden="true" />
-        <input id="buscar-paciente" type="search" value={q} onChange={(e) => setQ(e.target.value)} className={cx(claseEntrada, 'pl-10')} placeholder="Ej.: 000123, Saavedra" />
+        <Entrada iconoIzquierdo={<IconoBuscar size={16} aria-hidden="true" />} id="buscar-paciente" type="search" value={q} onChange={(e) => setQ(e.target.value)} className={claseEntrada} placeholder="Ej.: 000123, Saavedra" />
       </div>
       <ul className="divide-y divide-line rounded-lg border border-line bg-surface">
         {filtrados.map((p) => (
@@ -103,7 +104,7 @@ export function Historial() {
 
           <Tarjeta id="av-pio" titulo={soloAvPio ? 'Agudeza visual y PIO por ojo' : 'Agudeza visual y PIO en el tiempo'}>
             <div className="relative overflow-x-auto">
-              <table className="w-full min-w-[36rem] border-collapse text-left">
+              <HTMLTable className="w-full min-w-[36rem] border-collapse text-left">
                 <thead className="bg-muted text-sm">
                   <tr>
                     <th scope="col" rowSpan={2} className="px-3 py-2 font-semibold">Fecha</th>
@@ -128,7 +129,7 @@ export function Historial() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </HTMLTable>
             </div>
           </Tarjeta>
 

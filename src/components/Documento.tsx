@@ -1,9 +1,9 @@
+import { Dialog, DialogBody, DialogFooter } from '@blueprintjs/core'
 import { useEffect, useRef, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
 import { paciente as buscarPaciente } from '../lib/datos'
 import { documento, edad, fechaHora } from '../lib/formato'
 import { useEstado, usuarioPorId } from '../lib/store'
-import { IconoCerrar, IconoImprimir } from './iconos'
+import { IconoImprimir } from './iconos'
 import { Boton, cx } from './ui'
 
 /**
@@ -30,7 +30,7 @@ export function HojaDocumento({
   const autor = usuarioPorId(datos, autorId)
 
   return (
-    <article className={cx('mx-auto w-full max-w-[42rem] rounded-md border border-line bg-surface p-6 text-fg sm:p-8', imprimible && 'hoja-imprimible')}>
+    <article className={cx('mx-auto w-full max-w-[42rem] rounded-md border border-line bg-surface p-6 text-fg sm:p-8', 'hoja-imprimible', imprimible && 'documento-emitido')}>
       <header className="flex items-start justify-between gap-4 border-b-2 border-fg pb-3">
         <div>
           <p className="font-display text-lg font-bold">Hospital San Lucas</p>
@@ -70,41 +70,21 @@ export function HojaDocumento({
 
 /** Vista previa en un diálogo, con impresión: solo sale la hoja (ver @media print). */
 export function DialogoDocumento({ abierto, onCerrar, titulo, children, acciones }: { abierto: boolean; onCerrar: () => void; titulo: string; children: ReactNode; acciones?: ReactNode }) {
-  const ref = useRef<HTMLDialogElement>(null)
-
+  const contenedor = useRef<HTMLDivElement>(null)
+  const enfocar = () => contenedor.current?.querySelector<HTMLButtonElement>('[data-focus-documento]')?.focus()
   useEffect(() => {
-    const d = ref.current
-    if (!d) return
-    if (abierto && !d.open) d.showModal()
-    if (!abierto && d.open) d.close()
+    if (!abierto) return
+    // El navegador puede perder el foco al ocultar los controles para imprimir.
+    const alVolver = () => requestAnimationFrame(enfocar)
+    const medio = window.matchMedia('print')
+    const cambiarMedio = (evento: MediaQueryListEvent) => { if (!evento.matches) alVolver() }
+    window.addEventListener('afterprint', alVolver)
+    medio.addEventListener('change', cambiarMedio)
+    return () => { window.removeEventListener('afterprint', alVolver); medio.removeEventListener('change', cambiarMedio) }
   }, [abierto])
-
-  // Se monta en <body>, fuera de #root, para que al imprimir salga solo la hoja.
-  return createPortal(
-    <dialog
-      ref={ref}
-      onClose={onCerrar}
-      aria-label={titulo}
-      className="m-auto max-h-[92dvh] w-[min(48rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-line bg-canvas p-0 text-fg shadow-2xl backdrop:bg-scrim"
-    >
-      {abierto && (
-        <div className="flex max-h-[92dvh] flex-col">
-          <div className="flex items-center justify-between gap-3 border-b border-line bg-surface px-4 py-3 print:hidden">
-            <h2 className="text-base font-semibold">{titulo}</h2>
-            <div className="flex gap-2">
-              {acciones}
-              <Boton variante="primario" icono={IconoImprimir} onClick={() => window.print()}>
-                Imprimir
-              </Boton>
-              <button type="button" onClick={onCerrar} aria-label="Cerrar vista previa" className="grid size-10 place-items-center rounded-md hover:bg-muted">
-                <IconoCerrar size={20} aria-hidden="true" />
-              </button>
-            </div>
-          </div>
-          <div className="overflow-y-auto p-4 sm:p-6">{children}</div>
-        </div>
-      )}
-    </dialog>,
-    document.body,
-  )
+  return <Dialog isOpen={abierto} onClose={onCerrar} title={titulo} isCloseButtonShown={false} className="rce-document-dialog" transitionDuration={0}
+    containerRef={contenedor} onOpened={enfocar}>
+    <DialogBody>{children}</DialogBody>
+    <DialogFooter actions={<>{acciones}<Boton data-focus-documento onClick={onCerrar}>Cerrar vista previa</Boton><Boton variante="primario" icono={IconoImprimir} onClick={() => window.print()}>Imprimir</Boton></>} />
+  </Dialog>
 }

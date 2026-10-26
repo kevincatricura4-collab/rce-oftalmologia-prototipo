@@ -1,3 +1,7 @@
+import { Checkbox } from '@blueprintjs/core'
+import { Entrada, Seleccion } from './ui'
+import { HTMLTable, Button } from '@blueprintjs/core'
+import { useState } from 'react'
 import { camposPorGrupo, vieneDePreAtencion } from '../lib/consulta'
 import { aNumero, comaDecimal, normalizarFecha, normalizarHora } from '../lib/formato'
 import { SIN_HALLAZGOS, campoVisible } from '../lib/plantillas'
@@ -26,12 +30,13 @@ const PIO_MAXIMA_NORMAL = 21
 
 export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectura, onCambio, onVarios }: Props) {
   const grupos = camposPorGrupo(plantilla)
+  const [abiertos, setAbiertos] = useState<Record<string, boolean>>({})
   // En glaucoma la referencia es la PIO objetivo de cada ojo, no solo el límite poblacional de 21 mmHg.
   const usaPioObjetivo = plantilla.campos.some((c) => c.id === 'gl_pio_objetivo')
 
   return (
     <div className="rounded-lg border border-line relative bg-surface sm:overflow-x-auto">
-      <table className="w-full border-collapse text-left max-sm:block sm:min-w-[34rem]">
+      <HTMLTable className="w-full border-collapse text-left max-sm:block sm:min-w-[34rem]">
         <caption className="sr-only">Examen por ojo, {plantilla.nombre}. Columnas: campo, ojo derecho (OD), ojo izquierdo (OI).</caption>
         <colgroup>
           <col />
@@ -53,6 +58,13 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
         </thead>
         {grupos.map(({ grupo, campos }) => {
           const visibles = campos.filter((c) => campoVisible(c, hallazgos))
+          const principal = visibles.some((c) => c.obligatorio) || grupo.nombre === 'Agudeza visual' || grupo.nombre === 'Presión intraocular'
+          const tieneDatos = visibles.some((c) => Object.values(hallazgos[c.id] ?? {}).some(Boolean))
+          const abierto = principal || (abiertos[grupo.nombre] ?? false)
+          const basicos = visibles.filter((c) => c.obligatorio || ['av_cc', 'gl_pio_objetivo', 'gl_campo_visual'].includes(c.id))
+          const adicionales = principal ? visibles.filter((c) => !basicos.includes(c)) : []
+          const mostrarAdicionales = abiertos[`${grupo.nombre}-adicionales`] ?? false
+          const camposMostrados = principal && !mostrarAdicionales ? basicos : visibles
           const porOjo = visibles.filter((c) => c.lateralidad === 'por_ojo')
           const deTexto = porOjo.filter((c) => c.tipo === 'texto')
           const sinHallazgosEn = (ojo: Ojo) => deTexto.length > 0 && deTexto.every((c) => hallazgos[c.id]?.[ojo] === SIN_HALLAZGOS)
@@ -60,13 +72,22 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
           const copiables = grupo.copiarOdOi ? porOjo.filter((c) => hallazgos[c.id]?.OD) : []
 
           return (
-            <tbody key={grupo.nombre} className="border-b border-line last:border-b-0 max-sm:block">
+            <tbody key={grupo.nombre} id={`grupo-${plantilla.id}-${grupo.nombre.replaceAll(' ', '-')}`} className="border-b border-line last:border-b-0 max-sm:block">
               <tr className="bg-canvas/60 max-sm:grid max-sm:grid-cols-2">
                 <th scope="colgroup" className="px-3 pt-3 pb-1.5 max-sm:col-span-2 sm:px-4">
                   <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                    <span className="font-display text-[0.9375rem] font-semibold">{grupo.nombre}</span>
-                    {!soloLectura && copiables.length > 0 && (
-                      <button
+                    {principal ? (
+                      <span className="font-display text-[0.9375rem] font-semibold">{grupo.nombre}</span>
+                    ) : (
+                      <Button variant="minimal" type="button" aria-expanded={abierto} aria-controls={`grupo-${plantilla.id}-${grupo.nombre.replaceAll(' ', '-')}`} className="min-h-10 text-left font-semibold text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [grupo.nombre]: !abierto }))}>
+                        {abierto ? 'Ocultar' : 'Mostrar'} {grupo.nombre.toLowerCase()} · adicional{tieneDatos ? ' · con datos' : ''}
+                      </Button>
+                    )}
+                    {adicionales.length > 0 && <Button variant="minimal" type="button" aria-label={`${mostrarAdicionales ? 'Ocultar' : 'Mostrar'} adicionales de ${grupo.nombre}`} aria-expanded={mostrarAdicionales} className="min-h-8 text-left text-[0.8125rem] font-medium text-primary hover:underline" onClick={() => setAbiertos((a) => ({ ...a, [`${grupo.nombre}-adicionales`]: !mostrarAdicionales }))}>
+                      {mostrarAdicionales ? 'Ocultar adicionales' : `Mostrar adicionales (${adicionales.length})`}
+                    </Button>}
+                    {abierto && !soloLectura && copiables.length > 0 && (
+                      <Button variant="minimal"
                         type="button"
                         onClick={() => onVarios(copiables.map((c) => ({ campoId: c.id, lado: 'OI', valor: hallazgos[c.id]!.OD! })))}
                         className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-[0.8125rem] font-medium text-primary transition-colors duration-150 hover:bg-primary-soft"
@@ -74,26 +95,21 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                         Copiar OD
                         <IconoAvanzar size={16} aria-hidden="true" />
                         OI<span className="sr-only">, {grupo.nombre}</span>
-                      </button>
+                      </Button>
                     )}
                   </span>
                 </th>
-                {grupo.sinHallazgos && deTexto.length > 0 && !soloLectura ? (
+                {abierto && grupo.sinHallazgos && deTexto.length > 0 && !soloLectura ? (
                   // Casilla y no botón: un botón con el texto "Sin hallazgos" se confundía con un campo ya
                   // llenado con ese valor. En solo lectura no se muestra: los campos ya dicen lo registrado.
                   OJOS.map((ojo) => {
                     const activo = sinHallazgosEn(ojo)
                     return (
                       <td key={ojo} className="px-2 pt-3 pb-1.5">
-                        <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-sm font-medium">
-                          <input
-                            type="checkbox"
-                            className="size-4 shrink-0 accent-primary"
+                        <Checkbox  className="inline-flex min-h-8 cursor-pointer items-center gap-2 text-sm font-medium"
+
                             checked={activo}
-                            onChange={(e) => onVarios(deTexto.map((c) => ({ campoId: c.id, lado: ojo, valor: e.target.checked ? SIN_HALLAZGOS : '' })))}
-                          />
-                          Sin hallazgos <span className="sr-only">{ojo === 'OD' ? 'ojo derecho' : 'ojo izquierdo'}, {grupo.nombre}</span>
-                        </label>
+                            onChange={(e) => onVarios(deTexto.map((c) => ({ campoId: c.id, lado: ojo, valor: e.target.checked ? SIN_HALLAZGOS : '' })))} labelElement={<>Sin hallazgos <span className="sr-only">{ojo === 'OD' ? 'ojo derecho' : 'ojo izquierdo'}, {grupo.nombre}</span></>} />
                       </td>
                     )
                   })
@@ -101,13 +117,13 @@ export function FormularioExamen({ plantilla, hallazgos, preAtencion, soloLectur
                   <td colSpan={2} className="max-sm:hidden" />
                 )}
               </tr>
-              {visibles.map((campo) => (
+              {abierto && camposMostrados.map((campo) => (
                 <FilaCampo key={campo.id} campo={campo} hallazgos={hallazgos} preAtencion={preAtencion} soloLectura={soloLectura} usaPioObjetivo={usaPioObjetivo} onCambio={onCambio} />
               ))}
             </tbody>
           )
         })}
-      </table>
+      </HTMLTable>
     </div>
   )
 }
@@ -128,6 +144,7 @@ function FilaCampo({ campo, hallazgos, preAtencion, soloLectura, usaPioObjetivo,
     <tr className="border-t border-line/70 max-sm:grid max-sm:grid-cols-2">
       <th scope="row" className="px-3 py-1.5 align-middle font-normal max-sm:col-span-2 max-sm:pb-0 sm:px-4">
         <span className="text-[0.9375rem]">{campo.etiqueta}</span>
+        <span className="block text-[0.8125rem] text-fg-muted">{campo.obligatorio ? 'Registro completo' : 'Opcional'}</span>
         {campo.unidad && <span className="text-fg-muted"> ({campo.unidad})</span>}
         {origen && <span className="ml-2 inline-block text-[0.8125rem] text-fg-muted">{origen}</span>}
         {campo.personalizado && <span className="ml-2 inline-block text-[0.8125rem] text-fg-muted">campo agregado por configuración</span>}
@@ -157,12 +174,12 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
   switch (campo.tipo) {
     case 'opcion':
       return (
-        <select aria-label={etiqueta} value={valor} disabled={soloLectura} onChange={(e) => cambiar(e.target.value)} className={cx(claseEntrada, 'h-9 pr-8')}>
+        <Seleccion aria-label={etiqueta} value={valor} disabled={soloLectura} onChange={(e) => cambiar(e.target.value)} className={cx(claseEntrada, 'h-9 pr-8')}>
           <option value="">—</option>
           {campo.opciones?.map((o) => (
             <option key={o}>{o}</option>
           ))}
-        </select>
+        </Seleccion>
       )
 
     case 'opciones': {
@@ -171,10 +188,8 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
         <fieldset disabled={soloLectura} className="flex flex-wrap gap-x-4 gap-y-1 py-1">
           <legend className="sr-only">{etiqueta}</legend>
           {campo.opciones?.map((o) => (
-            <label key={o} className="inline-flex min-h-8 items-center gap-2 text-[0.9375rem]">
-              <input
-                type="checkbox"
-                className="size-4 accent-primary"
+            <Checkbox  key={o} className="inline-flex min-h-8 items-center gap-2 text-[0.9375rem]"
+
                 checked={elegidas.includes(o)}
                 onChange={(e) => {
                   // "Ninguna" excluye a las demás opciones.
@@ -182,10 +197,7 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
                   if (e.target.checked && o === 'Ninguna') nuevas = ['Ninguna']
                   else if (e.target.checked) nuevas = nuevas.filter((x) => x !== 'Ninguna')
                   cambiar(campo.opciones!.filter((x) => nuevas.includes(x)).join('; '))
-                }}
-              />
-              {o}
-            </label>
+                }} labelElement={<>{o}</>} />
           ))}
         </fieldset>
       )
@@ -208,7 +220,7 @@ function Control({ campo, lado, valor, pioObjetivo, soloLectura, onCambio }: { c
       const ayuda = campo.tipo === 'fecha' ? 'dd-mm-aaaa' : campo.tipo === 'hora' ? 'hh:mm' : campo.placeholder
       return (
         <>
-          <input
+          <Entrada
             aria-label={`${etiqueta}${campo.tipo === 'fecha' ? ', formato día-mes-año' : ''}`}
             type="text"
             inputMode={campo.tipo === 'numero' || campo.tipo === 'hora' ? 'numeric' : campo.tipo === 'decimal' ? 'decimal' : undefined}

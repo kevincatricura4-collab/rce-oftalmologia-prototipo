@@ -326,3 +326,45 @@ Todo es ficticio. No usar nombres, RUN ni establecimientos reales.
 
 - **Notación:** agudeza visual en decimal con coma (0,5). PIO en mmHg entero. Fechas en
   formato chileno (día-mes-año).
+
+## 12. Ajustes de usabilidad del prototipo
+
+- Se mantienen los cinco pasos, las plantillas y los campos de las fichas. El examen muestra
+  primero los campos del registro completo, AV con corrección y, en glaucoma, PIO objetivo y
+  campo visual. Los demás campos y grupos se despliegan a solicitud; ocultarlos no borra datos.
+  Los grupos adicionales indican si contienen datos. Los campos personalizados obligatorios
+  permanecen en la vista principal.
+- La etiqueta **Registro completo** identifica los campos que cuentan para el indicador 1;
+  **Opcional** identifica los demás. Se conserva el cierre en dos niveles: los bloqueos mínimos
+  impiden cerrar; los pendientes de completitud requieren confirmación y cuentan como incompletos.
+- La SIC se despliega en anamnesis y los fármacos se pueden incorporar explícitamente para
+  revisión, solo si el campo de destino está vacío. No se asume que el antecedente siga vigente.
+- El tratamiento hipotensor actual registra antecedentes; desde Indicaciones puede utilizarse
+  como borrador de receta. Dosis, frecuencia y duración deben revisarse antes de emitir. La
+  indicación quirúrgica y el ojo de catarata se sincronizan entre examen y cierre en ambas direcciones.
+- Los formularios de medicamentos y órdenes se abren al agregarlos. La emisión valida datos
+  mínimos; guardar borradores sigue permitido. Al modificar una receta o el contenido de una
+  orden se debe emitir nuevamente. Emitir una receta marca la indicación de tratamiento como sí,
+  y el profesional puede revisar esa declaración al cierre.
+- Contrarreferencia y resumen se despliegan cuando se necesitan; la contrarreferencia se abre
+  al seleccionar alta. Su borrador reutiliza recetas y órdenes emitidas y el plazo registrado,
+  sin reemplazar texto ya escrito. El profesional completa y revisa conducta y control antes de
+  emitir. El resumen generado tampoco reemplaza texto existente.
+- Una consulta cerrada conserva sus datos y órdenes originales. El oftalmólogo puede añadir
+  la ubicación de un resultado o una aclaración a una orden emitida, como anexo independiente
+  con autor y fecha. Las incorporaciones se conservan en orden y no se editan ni eliminan.
+  El estado y la referencia anteriores se identifican como datos **al cierre**.
+- Las plantillas locales antiguas migran el nombre de tratamiento hipotensor sin restablecer
+  los borradores ni borrar los campos personalizados.
+
+Estos ajustes organizan la información existente; la selección clínica de campos y la carga
+de trabajo aún requieren la revisión del oftalmólogo y las pruebas de usabilidad previstas.
+
+## 13. Diseño con Blueprint
+
+La interfaz utiliza Blueprint 6.21.0 en todas sus pantallas. La composición visual y los
+componentes vigentes se definen en `design-system/MASTER.md`. El flujo, las plantillas,
+los indicadores y las reglas del registro se conservan. El tema oscuro se propaga a los
+portales y la impresión de documentos permanece en negro sobre blanco.
+
+La cobertura de verificación se encuentra en `docs/auditoria-blueprint.md`.

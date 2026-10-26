@@ -1,9 +1,10 @@
+@layer theme, base, blueprint, components, utilities;
 @import "tailwindcss";
+@import "@blueprintjs/core/lib/css/blueprint.css" layer(blueprint);
 
 /*
   Sistema de diseño — ver design-system/MASTER.md
-  Base: UI UX Pro Max · producto "Patient Portal / Health Records" (#182)
-  Estilo: Trust & Authority + Accessible & Ethical, con densidad de Data-Dense Dashboard.
+  Componentes Blueprint 6.21.0; tokens clínicos para tema claro y oscuro.
   Los colores se definen como tokens semánticos; ninguna pantalla usa hex directos.
 */
 
@@ -11,16 +12,16 @@
 
 :root {
   color-scheme: light;
-  --canvas: #f0f9ff;
+  --canvas: #f6f7f9;
   --surface: #ffffff;
-  --muted: #e8f2f8;
-  --fg: #082f49;
-  --fg-muted: #475569;
-  --line: #cfe3ef;
-  --line-strong: #6b8ca3;
-  --primary: #0369a1;
-  --primary-hover: #075985;
-  --primary-soft: #e0f2fe;
+  --muted: #eef1f4;
+  --fg: #1c2127;
+  --fg-muted: #5f6b7c;
+  --line: #dce0e5;
+  --line-strong: #738091;
+  --primary: #215db0;
+  --primary-hover: #184a90;
+  --primary-soft: #e7f0fc;
   --on-primary: #ffffff;
   --ok: #15803d;
   --ok-soft: #dcfce7;
@@ -29,28 +30,28 @@
   --warn-line: #b45309;
   --danger: #b91c1c;
   --danger-soft: #fee2e2;
-  --od: #0369a1;
-  --od-soft: #e0f2fe;
-  --oi: #0f766e;
-  --oi-soft: #ccfbf1;
-  --ring: #0284c7;
+  --od: #215db0;
+  --od-soft: #e7f0fc;
+  --oi: #0b7261;
+  --oi-soft: #d5f2e9;
+  --ring: #2d72d2;
   --scrim: rgb(8 47 73 / 0.55);
 }
 
 /* Modo box oscuro: el examen con lámpara de hendidura y el fondo de ojo se hacen con la luz baja. */
 [data-theme="dark"] {
   color-scheme: dark;
-  --canvas: #06141d;
-  --surface: #0c2130;
-  --muted: #12303f;
-  --fg: #e6f3fb;
-  --fg-muted: #a3bccc;
-  --line: #1d4155;
-  --line-strong: #5d889f;
-  --primary: #6cb0e0;
-  --primary-hover: #9ccbe9;
-  --primary-soft: #0b3a52;
-  --on-primary: #04202e;
+  --canvas: #1c2127;
+  --surface: #252a31;
+  --muted: #2f343c;
+  --fg: #f6f7f9;
+  --fg-muted: #abb3bf;
+  --line: #404854;
+  --line-strong: #738091;
+  --primary: #8abbff;
+  --primary-hover: #b3d4ff;
+  --primary-soft: #203c5e;
+  --on-primary: #102341;
   --ok: #4ade80;
   --ok-soft: #0f3a23;
   --warn: #fcd34d;
@@ -59,7 +60,7 @@
   --danger: #fca5a5;
   --danger-soft: #4a1616;
   --od: #7dd3fc;
-  --od-soft: #0b3a52;
+  --od-soft: #203c5e;
   --oi: #5eead4;
   --oi-soft: #0c3b38;
   --ring: #7dd3fc;
@@ -149,28 +150,6 @@
   html,
   body {
     background: #fff !important;
-  }
-  body:has(> dialog[open]) > #root {
-    display: none;
-  }
-  dialog[open] {
-    position: static;
-    width: auto;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    border: 0;
-    padding: 0;
-    box-shadow: none;
-    background: #fff;
-    overflow: visible;
-  }
-  dialog[open] * {
-    max-height: none !important;
-    overflow: visible !important;
-  }
-  dialog::backdrop {
-    background: transparent;
   }
   .hoja-imprimible {
     --surface: #fff;

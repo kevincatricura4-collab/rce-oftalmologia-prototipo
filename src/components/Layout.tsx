@@ -1,3 +1,4 @@
+import { Alert, Button, Drawer, Menu, MenuDivider, Tag } from '@blueprintjs/core'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useEstado } from '../lib/store'
@@ -44,14 +45,21 @@ export function inicioDeRol(rol: Rol): string {
 
 function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
   const { usuario, salir, restablecer } = useEstado()
+  const [confirmarReinicio, setConfirmarReinicio] = useState(false)
   const navegar = useNavigate()
   if (!usuario) return null
   const items = MENU.filter((m) => m.roles.includes(usuario.rol))
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="rce-sidebar flex h-full flex-col">
+      <div className="rce-workspace">
+        <p className="text-[0.8125rem] font-semibold uppercase tracking-wider text-fg-muted">Policlínico</p>
+        <p className="mt-1 text-base font-semibold">Oftalmología</p>
+        <Tag minimal className="mt-3">{usuario.ubicacion}</Tag>
+      </div>
       <nav aria-label="Menú principal" className="flex-1 overflow-y-auto py-2">
-        <ul className="flex flex-col">
+        <Menu className="rce-menu">
+          <MenuDivider title={usuario.rol === 'administrador' ? 'Configuración' : usuario.rol === 'jefatura' ? 'Gestión' : 'Espacio de atención'} />
           {items.map((item) => (
             <li key={item.ruta}>
               <NavLink
@@ -59,9 +67,9 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
                 onClick={alNavegar}
                 className={({ isActive }) =>
                   cx(
-                    // Menú lateral al estilo Carbon: filas a ras y barra izquierda en el activo (no solo color).
-                    'flex min-h-10 items-center gap-3 border-l-[3px] px-4 py-2 text-[0.9375rem] transition-colors duration-150 focus-visible:outline-offset-[-3px]',
-                    isActive ? 'border-primary bg-muted font-semibold text-fg' : 'border-transparent font-medium text-fg hover:bg-muted',
+                    // Enlaces de React Router con selección y estilo del menú Blueprint.
+                    'bp6-menu-item rce-menu-link',
+                    isActive ? 'bp6-active' : '',
                   )
                 }
               >
@@ -77,14 +85,14 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
               </NavLink>
             </li>
           ))}
-        </ul>
+        </Menu>
       </nav>
 
       <div className="border-t border-line p-3">
         <p className="px-3 text-sm font-semibold">{usuario.nombre}</p>
         <p className="px-3 text-[0.8125rem] text-fg-muted">{usuario.profesion}</p>
         <div className="mt-3 flex flex-col gap-1">
-          <button
+          <Button variant="minimal" alignText="start"
             type="button"
             onClick={() => {
               salir()
@@ -94,19 +102,23 @@ function BarraLateral({ alNavegar }: { alNavegar?: () => void }) {
           >
             <IconoCambiarPerfil size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
             Cambiar de perfil
-          </button>
-          <button
+          </Button>
+          <Button variant="minimal" alignText="start"
             type="button"
             onClick={() => {
-              if (confirm('¿Volver a los datos de prueba originales? Se pierde lo registrado en este recorrido.')) restablecer()
+              setConfirmarReinicio(true)
             }}
             className="flex min-h-10 items-center gap-3 rounded-sm px-3 py-2 text-left text-sm font-medium transition-colors duration-150 hover:bg-muted"
           >
             <IconoRestablecer size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
             Restablecer datos de prueba
-          </button>
+          </Button>
         </div>
       </div>
+      <Alert isOpen={confirmarReinicio} onCancel={() => setConfirmarReinicio(false)} onConfirm={() => { restablecer(); setConfirmarReinicio(false) }} cancelButtonText="Cancelar" confirmButtonText="Restablecer datos" intent="danger" canEscapeKeyCancel>
+        <h2 className="mb-2 text-lg font-semibold">Restablecer datos de prueba</h2>
+        <p>Se perderá lo registrado en este navegador durante el recorrido.</p>
+      </Alert>
     </div>
   )
 }
@@ -123,7 +135,6 @@ export function Layout() {
   const [menuAbierto, setMenuAbierto] = useState(false)
   const { pathname } = useLocation()
   const contenido = useRef<HTMLElement>(null)
-  const cerrarMenu = useRef<HTMLButtonElement>(null)
   const primeraCarga = useRef(true)
 
   // Al cambiar de pantalla se vuelve arriba y el foco pasa al contenido, como en una carga de página:
@@ -137,17 +148,6 @@ export function Layout() {
     window.scrollTo(0, 0)
     contenido.current?.focus({ preventScroll: true })
   }, [pathname])
-
-  useEffect(() => {
-    if (menuAbierto) cerrarMenu.current?.focus()
-  }, [menuAbierto])
-
-  useEffect(() => {
-    if (!menuAbierto) return
-    const cerrar = (e: KeyboardEvent) => e.key === 'Escape' && setMenuAbierto(false)
-    window.addEventListener('keydown', cerrar)
-    return () => window.removeEventListener('keydown', cerrar)
-  }, [menuAbierto])
 
   if (!usuario) return null
 
@@ -165,7 +165,7 @@ export function Layout() {
         Saltar al contenido
       </a>
       <BarraSuperior onMenu={() => setMenuAbierto(true)}>
-        <span className="hidden text-sm whitespace-nowrap text-fg-muted lg:inline">
+        <span className="rce-role-location hidden text-sm whitespace-nowrap lg:inline">
           {ROLES[usuario.rol].nombre} · {usuario.ubicacion}
         </span>
       </BarraSuperior>
@@ -175,24 +175,14 @@ export function Layout() {
           <BarraLateral />
         </aside>
 
-        {menuAbierto && (
-          <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label="Menú">
-            <div className="absolute inset-0 bg-scrim" onClick={() => setMenuAbierto(false)} aria-hidden="true" />
-            <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-surface shadow-xl">
-              <div className="flex h-14 items-center justify-between border-b border-line px-4">
-                <span className="font-display font-semibold">Menú</span>
-                <button ref={cerrarMenu} type="button" onClick={() => setMenuAbierto(false)} aria-label="Cerrar menú" className="grid size-10 place-items-center rounded-md hover:bg-muted">
-                  <IconoCerrar size={20} aria-hidden="true" />
-                </button>
-              </div>
-              <div className="min-h-0 flex-1">
-                <BarraLateral alNavegar={() => setMenuAbierto(false)} />
-              </div>
-            </div>
-          </div>
-        )}
+        <Drawer title={<span className="flex items-center justify-between gap-3">Navegación<Button variant="minimal" aria-label="Cerrar menú" onClick={() => setMenuAbierto(false)} icon={<IconoCerrar size={20} aria-hidden="true" />} /></span>}
+          isCloseButtonShown={false} isOpen={menuAbierto} onClose={() => setMenuAbierto(false)} position="left" size="280px" transitionDuration={0} className="rce-navigation-drawer"
+          onOpening={(elemento) => { elemento.setAttribute('role', 'dialog'); elemento.setAttribute('aria-modal', 'true'); elemento.setAttribute('aria-label', 'Navegación') }}
+          onOpened={(elemento) => elemento.querySelector<HTMLButtonElement>('[aria-label="Cerrar menú"]')?.focus()}>
+          <BarraLateral alNavegar={() => setMenuAbierto(false)} />
+        </Drawer>
 
-        <main id="contenido" ref={contenido} tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
+        <main id="contenido" ref={contenido} tabIndex={-1} className="rce-main min-w-0 flex-1 px-4 py-6 focus:outline-none sm:px-6 lg:px-8">
           <Outlet />
         </main>
       </div>

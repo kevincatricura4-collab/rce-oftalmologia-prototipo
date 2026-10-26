@@ -1,6 +1,8 @@
+import { Entrada } from '../../components/ui'
+import { Button } from '@blueprintjs/core'
 import { useId, useMemo, useState } from 'react'
 import { IconoAgregar, IconoBuscar, IconoQuitar } from '../../components/iconos'
-import { Aviso, Boton, Insignia, Segmentado, Tarjeta, claseEntrada, cx } from '../../components/ui'
+import { Aviso, Boton, Insignia, Segmentado, Tarjeta, claseEntrada } from '../../components/ui'
 import { CIE10 } from '../../lib/catalogos'
 import { sic as buscarSic } from '../../lib/datos'
 import { nuevoId } from '../../lib/formato'
@@ -62,14 +64,14 @@ export function PasoDiagnostico({ consulta, soloLectura, actualizar, registrar }
             Texto o código
           </label>
           <div className="relative mt-1">
-            <IconoBuscar size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted" aria-hidden="true" />
-            <input
+            <Entrada
+              iconoIzquierdo={<IconoBuscar size={16} aria-hidden="true" />}
               id={idBusqueda}
               type="search"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Ej.: glaucoma, catarata nuclear, H52"
-              className={cx(claseEntrada, 'pl-10')}
+              className={claseEntrada}
               autoComplete="off"
               aria-describedby={`${idBusqueda}-n`}
             />
@@ -82,12 +84,12 @@ export function PasoDiagnostico({ consulta, soloLectura, actualizar, registrar }
             <ul className="mt-3 divide-y divide-line rounded-md border border-line" aria-label="Resultados de la búsqueda">
               {resultados.map((r) => (
                 <li key={r.codigo}>
-                  <button type="button" onClick={() => agregar(r.codigo, r.descripcion)} className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-left transition-colors duration-150 hover:bg-primary-soft">
+                  <Button variant="minimal" type="button" onClick={() => agregar(r.codigo, r.descripcion)} className="flex min-h-11 w-full items-center gap-3 px-3 py-2 text-left transition-colors duration-150 hover:bg-primary-soft">
                     <span className="tnum w-14 shrink-0 font-semibold text-primary">{r.codigo}</span>
                     <span className="min-w-0 flex-1">{r.descripcion}</span>
                     <IconoAgregar size={16} className="shrink-0 text-fg-muted" aria-hidden="true" />
                     <span className="sr-only">Agregar</span>
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -125,9 +127,9 @@ export function PasoDiagnostico({ consulta, soloLectura, actualizar, registrar }
                     {d.principal ? <Insignia tono="info" className="ml-2">Principal</Insignia> : <Insignia className="ml-2">Secundario</Insignia>}
                   </p>
                   {!soloLectura && (
-                    <button type="button" onClick={() => quitar(d.id)} aria-label={`Quitar ${d.codigo} ${d.descripcion}`} className="grid size-9 shrink-0 place-items-center rounded-md text-danger hover:bg-danger-soft">
+                    <Button variant="minimal" type="button" onClick={() => quitar(d.id)} aria-label={`Quitar ${d.codigo} ${d.descripcion}`} className="grid size-9 shrink-0 place-items-center rounded-md text-danger hover:bg-danger-soft">
                       <IconoQuitar size={16} aria-hidden="true" />
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div className="mt-2 flex flex-wrap items-end gap-x-6 gap-y-2">

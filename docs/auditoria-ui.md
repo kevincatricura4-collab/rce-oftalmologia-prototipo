@@ -1,3 +1,5 @@
+> Esta revisión corresponde al diseño anterior. La auditoría de la interfaz vigente está en [auditoria-blueprint.md](auditoria-blueprint.md).
+
 # Auditoría de interfaz y usabilidad
 
 Revisión del prototipo contra la lista de control de `design-system/MASTER.md` y las guías del
